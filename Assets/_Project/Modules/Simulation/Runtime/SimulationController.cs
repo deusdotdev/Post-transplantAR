@@ -63,6 +63,56 @@ namespace LiverAR.Modules.Simulation.Runtime
             RaiseChanged();
         }
 
+        /// <summary>Red senaryosunda bir sonraki evreye geçer (erken -> akut -> kronik).</summary>
+        public void AdvanceRejection()
+        {
+            if (state == null || state.CurrentScenario != ScenarioType.Rejection)
+            {
+                return;
+            }
+
+            state.RejectionStage = Mathf.Min(state.RejectionStage + 1, 3);
+            state.IsRejecting = state.RejectionStage > 0;
+            state.ImmuneAttack = state.RejectionStage >= 2;
+
+            var t = state.RejectionStage / 3f;
+            state.VascularOcclusion = t;
+            state.FibrosisFactor = Mathf.Clamp01(t * 0.9f);
+            state.Bilirubin = Mathf.Lerp(0.8f, 7.5f, t);
+            state.AST = Mathf.Lerp(25f, 350f, t);
+            state.ALT = Mathf.Lerp(30f, 320f, t);
+            state.HealthPoints = Mathf.Lerp(100f, 20f, t);
+
+            RaiseChanged();
+        }
+
+        /// <summary>Yaşam tarzı senaryosunda sağlıklı/yağlı tercihini uygular.</summary>
+        public void SetLifestyle(bool healthy)
+        {
+            if (state == null)
+            {
+                return;
+            }
+
+            state.IsFattyDiet = !healthy;
+            state.NutritionMultiplier = healthy ? 1.2f : 0.8f;
+            state.ExerciseMultiplier = healthy ? 1.2f : 0.7f;
+
+            if (healthy)
+            {
+                state.HealthPoints = Mathf.Min(100f, state.HealthPoints + 10f);
+                state.GrowthPercentage = Mathf.Min(1f, state.GrowthPercentage + 0.05f);
+                state.Bilirubin = Mathf.Max(0.8f, state.Bilirubin - 0.3f);
+            }
+            else
+            {
+                state.HealthPoints = Mathf.Max(0f, state.HealthPoints - 8f);
+                state.Bilirubin = Mathf.Min(8f, state.Bilirubin + 0.4f);
+            }
+
+            RaiseChanged();
+        }
+
         public string GetHeader()
         {
             if (state == null)
@@ -76,8 +126,23 @@ namespace LiverAR.Modules.Simulation.Runtime
                     return $"Onarım Süreci - Hafta {state.SimulationWeek}";
                 case ScenarioType.Medication:
                     return state.IsAdherent ? "İlaç Uyumu - Düzenli" : "İlaç Uyumu - Aksatıldı";
+                case ScenarioType.Rejection:
+                    return $"Red / Rejeksiyon - {GetRejectionStageName(state.RejectionStage)}";
+                case ScenarioType.Lifestyle:
+                    return state.IsFattyDiet ? "Yaşam Tarzı - Yağlı Diyet" : "Yaşam Tarzı - Sağlıklı";
                 default:
                     return "Senaryo Seçimi";
+            }
+        }
+
+        private static string GetRejectionStageName(int stage)
+        {
+            switch (stage)
+            {
+                case 0: return "Stabil";
+                case 1: return "Erken";
+                case 2: return "Akut";
+                default: return "Kronik";
             }
         }
 
@@ -96,8 +161,29 @@ namespace LiverAR.Modules.Simulation.Runtime
                     return state.IsAdherent
                         ? "İlaçlar düzenli alındığında bağışıklık baskılanır, yeni karaciğer reddedilmez ve iyileşme sürer."
                         : "DİKKAT: İlaç aksatıldığında bağışıklık sistemi organa saldırır; sararma ve fonksiyon kaybı başlar.";
+                case ScenarioType.Rejection:
+                    return GetRejectionDescription(state.RejectionStage);
+                case ScenarioType.Lifestyle:
+                    return state.IsFattyDiet
+                        ? "Yağlı diyet ve hareketsizlik karaciğerde yağlanmaya (steatoz) ve fonksiyon kaybına yol açar."
+                        : "Dengeli beslenme ve düzenli egzersiz damar akışını ve doku sağlığını destekler.";
                 default:
                     return "İncelemek istediğiniz nakil sonrası senaryoyu seçin.";
+            }
+        }
+
+        private static string GetRejectionDescription(int stage)
+        {
+            switch (stage)
+            {
+                case 0:
+                    return "Organ stabil. 'Reddi İlerlet' ile rejeksiyon sürecini aşama aşama gözlemleyin.";
+                case 1:
+                    return "Erken rejeksiyon: bağışıklık hücreleri damar çevresinde toplanmaya başlar (hafif ödem).";
+                case 2:
+                    return "Akut rejeksiyon: belirgin sararma (icterus), damar tıkanıklığı ve doku şişmesi görülür.";
+                default:
+                    return "Kronik rejeksiyon: fibrozis ve kalıcı damar hasarı; organ fonksiyonu ciddi düşer.";
             }
         }
 

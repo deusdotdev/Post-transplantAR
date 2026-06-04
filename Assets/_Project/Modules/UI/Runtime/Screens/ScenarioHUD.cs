@@ -63,6 +63,31 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             controller?.SetMedicationAdherence(false);
         }
 
+        public void OnRejectionSelected()
+        {
+            controller?.StartScenario(ScenarioType.Rejection);
+        }
+
+        public void OnAdvanceRejection()
+        {
+            controller?.AdvanceRejection();
+        }
+
+        public void OnLifestyleSelected()
+        {
+            controller?.StartScenario(ScenarioType.Lifestyle);
+        }
+
+        public void OnHealthyLifestyle()
+        {
+            controller?.SetLifestyle(true);
+        }
+
+        public void OnFattyDiet()
+        {
+            controller?.SetLifestyle(false);
+        }
+
         private void Refresh()
         {
             if (controller == null)
@@ -93,10 +118,22 @@ namespace LiverAR.Modules.UI.Runtime.Screens
                 return string.Empty;
             }
 
-            return $"Büyüme: %{Mathf.RoundToInt(state.GrowthPercentage * 100f)}\n" +
-                   $"Sağlık: {Mathf.RoundToInt(state.HealthPoints)}\n" +
-                   $"AST: {state.AST:F0} U/L   ALT: {state.ALT:F0} U/L\n" +
-                   $"Bilirubin: {state.Bilirubin:F1} mg/dL";
+            var text = $"Büyüme: %{Mathf.RoundToInt(state.GrowthPercentage * 100f)}\n" +
+                       $"Sağlık: {Mathf.RoundToInt(state.HealthPoints)}\n" +
+                       $"AST: {state.AST:F0} U/L   ALT: {state.ALT:F0} U/L\n" +
+                       $"Bilirubin: {state.Bilirubin:F1} mg/dL";
+
+            if (state.CurrentScenario == ScenarioType.Rejection)
+            {
+                text += $"\nDamar tıkanıklığı: %{Mathf.RoundToInt(state.VascularOcclusion * 100f)}" +
+                        $"\nFibrozis: %{Mathf.RoundToInt(state.FibrosisFactor * 100f)}";
+            }
+            else if (state.CurrentScenario == ScenarioType.Lifestyle)
+            {
+                text += $"\nBeslenme x{state.NutritionMultiplier:F1}   Egzersiz x{state.ExerciseMultiplier:F1}";
+            }
+
+            return text;
         }
     }
 }

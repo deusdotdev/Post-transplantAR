@@ -6,7 +6,9 @@ namespace LiverAR.Modules.Simulation.Runtime.Data
     {
         None,
         Recovery,
-        Medication
+        Medication,
+        Rejection,
+        Lifestyle
     }
 
     /// <summary>
@@ -34,6 +36,17 @@ namespace LiverAR.Modules.Simulation.Runtime.Data
         public float ALT = 30f;        // Normal: 7-56 U/L
         public float Bilirubin = 0.8f; // Normal: 0.1-1.2 mg/dL
 
+        [Header("Red / Rejeksiyon")]
+        public int RejectionStage = 0;              // 0 yok, 1 erken, 2 akut, 3 kronik
+        [Range(0f, 1f)] public float VascularOcclusion = 0f; // damar tıkanıklığı
+        [Range(0f, 1f)] public float FibrosisFactor = 0f;    // fibrozis derecesi
+        public bool IsRejecting = false;
+
+        [Header("Yaşam Tarzı")]
+        public float NutritionMultiplier = 1f;
+        public float ExerciseMultiplier = 1f;
+        public bool IsFattyDiet = false;
+
         /// <summary>
         /// ScriptableObject değerleri Editor oturumları arasında kalıcıdır;
         /// senaryo başında bilinen bir başlangıca döndürmek için sıfırlanır.
@@ -48,6 +61,15 @@ namespace LiverAR.Modules.Simulation.Runtime.Data
             AST = 25f;
             ALT = 30f;
             Bilirubin = 0.8f;
+
+            RejectionStage = 0;
+            VascularOcclusion = 0f;
+            FibrosisFactor = 0f;
+            IsRejecting = false;
+
+            NutritionMultiplier = 1f;
+            ExerciseMultiplier = 1f;
+            IsFattyDiet = false;
         }
     }
 }

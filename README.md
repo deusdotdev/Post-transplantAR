@@ -75,11 +75,15 @@ LiverTransplantAR örneğinden esinlenilen, veri-merkezli senaryo sistemi:
 
 - `Modules/Simulation/Runtime/Data/SimulationState.cs` — `ScriptableObject` tek doğruluk kaynağı (büyüme, sağlık, AST/ALT/Bilirubin, ilaç uyumu)
 - `Modules/Simulation/Runtime/SimulationController.cs` — senaryo mantığı; **event-driven** (`StateChanged`), her frame string üretmez
-- `Modules/Visuals/Runtime/LiverVisualController.cs` — veriyi görsele bağlar (büyüme→ölçek, bilirubin→sararma, bağışıklık→şişme). `MaterialPropertyBlock` kullanır, özel shader gerektirmez
+- `Modules/Visuals/Runtime/LiverVisualController.cs` — veriyi görsele bağlar (büyüme→ölçek, bilirubin→sararma, bağışıklık→şişme, fibrozis→koyulaşma, yağlı diyet→steatoz tonu). `MaterialPropertyBlock` kullanır, özel shader gerektirmez
 - `Modules/Visuals/Runtime/LiverMeshGenerator.cs` — karaciğeri **koddan üretir** (iki loblu); dış 3B model/lisans gerektirmez
 - `Modules/UI/Runtime/Screens/ScenarioHUD.cs` — başlık/açıklama/klinik metin + buton aksiyonları
 
-Senaryolar: **Onarım** (haftalık rejenerasyon) ve **İlaç Uyumu** (düzenli/aksatma dallanması).
+Senaryolar:
+- **Onarım** — haftalık rejenerasyon (büyüme + klinik değerlerin normalleşmesi)
+- **İlaç Uyumu** — düzenli/aksatma dallanması (aksatınca bağışıklık saldırısı, sararma, şişme)
+- **Red / Rejeksiyon** — aşamalı süreç (erken → akut → kronik): damar tıkanıklığı, fibrozis, belirgin sararma
+- **Yaşam Tarzı** — sağlıklı beslenme/egzersiz vs. yağlı diyet (steatoz/yağlanma) karşılaştırması
 
 ## Editor Komutları (otomatik kurulum)
 

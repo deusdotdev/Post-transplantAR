@@ -23,6 +23,8 @@ namespace LiverAR.Modules.Visuals.Runtime
         [Header("Renk")]
         [SerializeField] private Color healthyColor = new Color(0.55f, 0.16f, 0.16f);
         [SerializeField] private Color jaundiceColor = new Color(0.85f, 0.78f, 0.2f);
+        [SerializeField] private Color fibrosisColor = new Color(0.32f, 0.22f, 0.18f);
+        [SerializeField] private Color steatosisColor = new Color(0.78f, 0.72f, 0.45f);
         [SerializeField] private float colorLerpSpeed = 2f;
 
         [Header("Şişme (ödem)")]
@@ -91,6 +93,15 @@ namespace LiverAR.Modules.Visuals.Runtime
 
             var jaundice = Mathf.InverseLerp(1.2f, 8f, state.Bilirubin);
             var target = Color.Lerp(healthyColor, jaundiceColor, jaundice);
+
+            // Steatoz (yağlanma): yüzeyi soluk sarımsı bir tona kaydırır.
+            if (state.IsFattyDiet)
+            {
+                target = Color.Lerp(target, steatosisColor, 0.6f);
+            }
+
+            // Fibrozis: doku koyulaşır/kahverengileşir.
+            target = Color.Lerp(target, fibrosisColor, state.FibrosisFactor);
 
             liverRenderer.GetPropertyBlock(_propBlock);
             var current = _propBlock.GetColor(BaseColorId);

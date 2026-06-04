@@ -87,16 +87,29 @@ namespace LiverAR.EditorTools
             // --- Butonlar ---
             // Kalıcı (serialize edilen) onClick dinleyicileri için doğrudan metot
             // referansı verilmeli; lambda serialize olmaz.
-            CreateButton(canvasGo.transform, "BtnRecovery", "Onarım Senaryosu",
-                new Vector2(0f, 320f), hud.OnRecoverySelected);
-            CreateButton(canvasGo.transform, "BtnMedication", "İlaç Uyumu Senaryosu",
-                new Vector2(0f, 180f), hud.OnMedicationSelected);
+            // Senaryo seçimi (2x2):
+            CreateButton(canvasGo.transform, "BtnRecovery", "Onarım",
+                new Vector2(-140f, 520f), hud.OnRecoverySelected);
+            CreateButton(canvasGo.transform, "BtnMedication", "İlaç Uyumu",
+                new Vector2(140f, 520f), hud.OnMedicationSelected);
+            CreateButton(canvasGo.transform, "BtnRejection", "Red / Rejeksiyon",
+                new Vector2(-140f, 400f), hud.OnRejectionSelected);
+            CreateButton(canvasGo.transform, "BtnLifestyle", "Yaşam Tarzı",
+                new Vector2(140f, 400f), hud.OnLifestyleSelected);
+
+            // Senaryo aksiyonları (2x3):
             CreateButton(canvasGo.transform, "BtnNextWeek", "Sonraki Hafta",
-                new Vector2(-280f, 40f), hud.OnNextWeek);
+                new Vector2(-280f, 200f), hud.OnNextWeek);
             CreateButton(canvasGo.transform, "BtnTakeMed", "İlacı Al",
-                new Vector2(0f, 40f), hud.OnTakeMedication);
+                new Vector2(0f, 200f), hud.OnTakeMedication);
             CreateButton(canvasGo.transform, "BtnSkipMed", "İlacı Atla",
-                new Vector2(280f, 40f), hud.OnSkipMedication);
+                new Vector2(280f, 200f), hud.OnSkipMedication);
+            CreateButton(canvasGo.transform, "BtnAdvanceRejection", "Reddi İlerlet",
+                new Vector2(-280f, 80f), hud.OnAdvanceRejection);
+            CreateButton(canvasGo.transform, "BtnHealthy", "Sağlıklı",
+                new Vector2(0f, 80f), hud.OnHealthyLifestyle);
+            CreateButton(canvasGo.transform, "BtnFatty", "Yağlı Diyet",
+                new Vector2(280f, 80f), hud.OnFattyDiet);
 
             EnsureEventSystem();
 
