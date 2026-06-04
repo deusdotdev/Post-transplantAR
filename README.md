@@ -25,29 +25,59 @@ Bu proje, karaciğer nakli sonrası hastaya yalnızca AR destekli görsel eğiti
 ```text
 Assets/_Project/
 ├── Bootstrap/
-│   └── SceneBootstrap.cs
+│   ├── SceneBootstrap.cs
+│   └── ARExperienceCoordinator.cs
 └── Modules/
     ├── AR/
-    │   └── Runtime/Controllers/ARPlacementController.cs
+    │   └── Runtime/Controllers/
+    │       ├── ARSessionController.cs
+    │       ├── PlaneDetectionMonitor.cs
+    │       └── ARPlacementController.cs
     ├── Interaction/
-    │   └── Runtime/Input/TapToPlaceInput.cs
+    │   └── Runtime/Input/
+    │       ├── TapToPlaceInput.cs
+    │       └── ModelManipulator.cs
     └── UI/
-        └── Runtime/Screens/ARSetupGuide.cs
+        └── Runtime/Screens/
+            ├── ARSetupGuide.cs
+            └── SafetyDisclaimerScreen.cs
 ```
 
 ## Modül Sorumlulukları
 
-- `AR`: düzlem algılama, raycast, 3D model yerleştirme
-- `Interaction`: dokunma girdisi, kullanıcı etkileşimi
-- `UI`: yönlendirme metinleri ve basit eğitim ekranı
-- `Bootstrap`: başlangıç performans ayarları ve sahne açılış akışı
+- `AR`:
+  - `ARSessionController`: cihaz AR uyumluluğu kontrolü, oturum yaşam döngüsü, desteklenmeyen cihazda durum bildirimi (Availability)
+  - `PlaneDetectionMonitor`: algılanan düzlemleri izler, yerleştirme uygunluğunu raporlar (Reliability)
+  - `ARPlacementController`: raycast ile 3D model yerleştirme/yeniden konumlandırma, gating ve event'ler
+- `Interaction`:
+  - `TapToPlaceInput`: tek parmak dokunuşuyla yerleştirme
+  - `ModelManipulator`: tek parmak döndürme, iki parmak (pinch) ölçekleme
+- `UI`:
+  - `ARSetupGuide`: durum/yönlendirme metinleri + kalıcı "tanı koymaz" güvenlik satırı
+  - `SafetyDisclaimerScreen`: ilk kullanımda onay gerektiren sorumluluk reddi ekranı (Safety)
+- `Bootstrap`:
+  - `SceneBootstrap`: kare hızı, vSync ve ekran uyuma ayarları
+  - `ARExperienceCoordinator`: modülleri birbirine bağlayan merkezi akış (Maintainability)
 
 ## Çalışma Akışı
 
-1. Kullanıcı ekrana dokunur.
-2. `TapToPlaceInput` dokunma bilgisini alır.
-3. `ARPlacementController` uygun düzleme modeli yerleştirir.
-4. `ARSetupGuide` ekranda yönlendirme metni gösterir.
+1. `SafetyDisclaimerScreen` ilk açılışta güvenlik uyarısını gösterir ve onay ister.
+2. `ARSessionController` cihaz uyumluluğunu kontrol eder; desteklenmiyorsa bilgilendirici fallback gösterilir.
+3. `PlaneDetectionMonitor` düz bir yüzey bulunca yerleştirmeyi etkinleştirir.
+4. Kullanıcı ekrana dokunur → `TapToPlaceInput` → `ARPlacementController` modeli yerleştirir.
+5. `ModelManipulator` ile model döndürülüp ölçeklenebilir.
+6. `ARSetupGuide` her adımda uygun yönlendirme metnini gösterir.
+7. `ARExperienceCoordinator` tüm bu olayları koordine eder.
+
+## Sahne Kurulumu (Inspector Bağlantıları)
+
+Tek sahnede şu GameObject'leri kurup script'leri bağlayın:
+
+- `XR Origin (AR)` üzerine: `ARRaycastManager`, `ARPlaneManager` (+ `PlaneDetectionMonitor`)
+- `AR Session` üzerine: `ARSession` (+ `ARSessionController` referansı)
+- Boş `Coordinator` objesi: `ARExperienceCoordinator` — tüm referansları buraya bağlayın
+- Boş `Input` objesi: `TapToPlaceInput`, `ModelManipulator` (her ikisinde `ARPlacementController` referansı)
+- Canvas: `ARSetupGuide` (statusText + safetyText) ve `SafetyDisclaimerScreen` (panel + buton)
 
 ## Kurulum
 

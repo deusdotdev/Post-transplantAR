@@ -9,7 +9,8 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
 
         private void Update()
         {
-            if (placementController == null || Input.touchCount == 0)
+            // Sadece tek parmak dokunuşunda yerleştir; iki parmak jesti ölçekleme içindir.
+            if (placementController == null || Input.touchCount != 1)
             {
                 return;
             }
