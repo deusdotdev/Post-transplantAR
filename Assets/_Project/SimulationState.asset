@@ -21,10 +21,3 @@ MonoBehaviour:
   AST: 25
   ALT: 30
   Bilirubin: 0.8
-  RejectionStage: 0
-  VascularOcclusion: 0
-  FibrosisFactor: 0
-  IsRejecting: 0
-  NutritionMultiplier: 1
-  ExerciseMultiplier: 1
-  IsFattyDiet: 0

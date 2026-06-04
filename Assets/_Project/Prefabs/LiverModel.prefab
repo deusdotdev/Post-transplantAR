@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5337166398576633011}
+  - component: {fileID: 8821045599332211044}
   - component: {fileID: 5329695367399747934}
   m_Layer: 0
   m_Name: LiverModel
@@ -27,12 +28,24 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3515626, y: 0.3515626, z: 0.3515626}
+  m_LocalScale: {x: 0.6250001, y: 0.6250001, z: 0.6250001}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5277730865008535432}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8821045599332211044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7939617686723055634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c4e9a2b1f8d4e6a9b0c1d2e3f4a5b6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &5329695367399747934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48,16 +61,16 @@ MonoBehaviour:
   state: {fileID: 11400000, guid: 108828d001e1f4c93a320fc4d31c144c, type: 2}
   liverRenderer: {fileID: 3186414252042107366}
   liverTransform: {fileID: 5337166398576633011}
-  minScale: 0.5
-  maxScale: 1
-  scaleLerpSpeed: 1.5
+  minScale: 0.88
+  maxScale: 1.08
+  medicationStableScale: 0.94
+  medicationRiskScale: 1.14
+  scaleLerpSpeed: 5
   healthyColor: {r: 0.55, g: 0.16, b: 0.16, a: 1}
   jaundiceColor: {r: 0.85, g: 0.78, b: 0.2, a: 1}
-  fibrosisColor: {r: 0.32, g: 0.22, b: 0.18, a: 1}
-  steatosisColor: {r: 0.78, g: 0.72, b: 0.45, a: 1}
   colorLerpSpeed: 2
-  swellingAmount: 0.12
-  swellingSpeed: 2.5
+  swellingAmount: 0.2
+  swellingSpeed: 3.5
 --- !u!1001 &8051951206994047096
 PrefabInstance:
   m_ObjectHideFlags: 0

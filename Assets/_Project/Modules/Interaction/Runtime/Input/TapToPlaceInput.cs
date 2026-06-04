@@ -1,5 +1,6 @@
 using LiverAR.Modules.AR.Runtime.Controllers;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace LiverAR.Modules.Interaction.Runtime.Input
 {
@@ -23,7 +24,22 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
                 return;
             }
 
-            placementController.TryPlaceFromScreenTap(touch.position);
+            if (IsOverUi(touch.fingerId))
+            {
+                return;
+            }
+
+            if (!placementController.TryPlaceFromScreenTap(touch.position))
+            {
+                // Üst kamera alanında düzlem yoksa yine de önüne yerleştirmeyi dene.
+                placementController.TryPlaceFromScreenTap(touch.position, allowFallbackInFrontOfCamera: true);
+            }
+        }
+
+        private static bool IsOverUi(int fingerId)
+        {
+            return EventSystem.current != null &&
+                   EventSystem.current.IsPointerOverGameObject(fingerId);
         }
     }
 }

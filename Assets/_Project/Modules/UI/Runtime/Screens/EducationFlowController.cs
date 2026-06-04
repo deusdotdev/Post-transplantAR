@@ -11,6 +11,9 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         [SerializeField] private AnatomyIntroScreen anatomyIntro;
         [SerializeField] private GameObject educationPanelRoot;
 
+        [Tooltip("AR sahnesi: menü yalnızca model yerleştirildikten sonra açılır.")]
+        [SerializeField] private bool deferMenuUntilModelPlaced;
+
         private bool _disclaimerDone;
         private bool _introDone;
 
@@ -80,7 +83,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             _introDone = true;
             if (educationPanelRoot != null)
             {
-                educationPanelRoot.SetActive(true);
+                educationPanelRoot.SetActive(!deferMenuUntilModelPlaced);
             }
 
             FlowComplete?.Invoke();

@@ -14,6 +14,12 @@ namespace LiverAR.EditorTools
     /// <summary>AR ve önizleme sahneleri için ortak eğitim arayüzü kurulumu.</summary>
     public static class EducationUIBuilder
     {
+        /// <summary>Alt menü yüksekliği (1080×1920 referans); üstte 3D alan kalır.</summary>
+        private const float CompactSheetHeight = 520f;
+        private const float CompactButtonWidth = 500f;
+        private const float CompactButtonHeight = 64f;
+        private const float CompactButtonStep = 76f;
+
         public sealed class BuiltUI
         {
             public SafetyDisclaimerScreen Disclaimer;
@@ -39,22 +45,14 @@ namespace LiverAR.EditorTools
             if (!compactBottomSheet)
             {
                 var backdrop = CreatePanel(canvas, "Backdrop", Vector2.zero, Vector2.one,
-                    Vector2.zero, Vector2.zero, new Color(0.03f, 0.05f, 0.09f, 0.97f));
+                    Vector2.zero, Vector2.zero, UITheme.ViewportBackground);
                 backdrop.transform.SetAsFirstSibling();
-                CreateViewportHint(canvas,
-                    "Karaciğer modeli bu üst alanda görünür (Editor önizleme).");
             }
 
             var disclaimer = BuildDisclaimer(canvas);
             var intro = BuildAnatomyIntro(canvas);
             var educationRoot = BuildEducationPanel(canvas, controller, compactBottomSheet,
                 out var hud, out var dashboard, out var info);
-
-            if (compactBottomSheet)
-            {
-                CreateViewportHint(canvas,
-                    "AR kamera görüntüsü — üst alan boş bırakıldı (bilerek).");
-            }
 
             // Giriş / uyarı / eğitim katmanı: modal her zaman en üstte kalsın.
             disclaimer.transform.SetAsLastSibling();
@@ -107,6 +105,34 @@ namespace LiverAR.EditorTools
             };
         }
 
+        public static ARPlacementPrompt BuildArPlacementPrompt(Transform canvas, EducationFlowController flow,
+            LiverAR.Modules.AR.Runtime.Controllers.ARPlacementController placement)
+        {
+            var root = CreateGlassPanel(canvas, "ARPlacementPrompt",
+                new Vector2(0.08f, 0.68f), new Vector2(0.92f, 0.86f),
+                Vector2.zero, Vector2.zero);
+            CreateAccentBar(root.transform, 4f, UITheme.Primary);
+            CreateBarText(root.transform, "PromptTitle", -20f, 44f, TextAnchor.MiddleCenter, 26,
+                "Karaciğeri yerleştir", UITheme.TextPrimary);
+            CreateBarText(root.transform, "PromptBody", -64f, 72f, TextAnchor.MiddleCenter, 18,
+                "Masaya veya zemine bak, sonra üst alana dokun veya butona bas.",
+                UITheme.TextMuted);
+
+            var promptGo = root.AddComponent<ARPlacementPrompt>();
+            var placeBtn = CreateButton(root.transform, "BtnPlaceLiver", "Karaciğeri yerleştir",
+                new Vector2(0f, -120f), UITheme.Success, null, 420f, 76f);
+            UnityEventTools.AddPersistentListener(placeBtn.GetComponent<Button>().onClick,
+                promptGo.OnPlaceButtonClicked);
+
+            SetField(promptGo, "placementController", placement);
+            SetField(promptGo, "educationFlow", flow);
+            SetField(promptGo, "promptRoot", root);
+
+            root.SetActive(false);
+            root.transform.SetAsLastSibling();
+            return promptGo;
+        }
+
         private static GameObject BuildEducationPanel(Transform canvas, SimulationController controller,
             bool compactBottomSheet, out ScenarioHUD hud, out ClinicalDashboard dashboard,
             out LiverAnatomyInfoPanel info)
@@ -120,7 +146,11 @@ namespace LiverAR.EditorTools
                 rootRt.anchorMax = new Vector2(1f, 0f);
                 rootRt.pivot = new Vector2(0.5f, 0f);
                 rootRt.offsetMin = Vector2.zero;
-                rootRt.offsetMax = new Vector2(0f, 920f);
+                rootRt.offsetMax = new Vector2(0f, CompactSheetHeight);
+                var sheetBg = CreatePanel(root.transform, "SheetBackground",
+                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UITheme.SheetBackground);
+                sheetBg.transform.SetAsFirstSibling();
+                CreateAccentBar(sheetBg.transform, 4f, UITheme.Primary);
             }
             else
             {
@@ -133,10 +163,13 @@ namespace LiverAR.EditorTools
             var mainMenu = CreateGlassPanel(root.transform, "MainMenuPanel",
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             CreateAccentBar(mainMenu.transform, 6f, UITheme.Primary);
-            CreateBarText(mainMenu.transform, "MenuTitle", -28f, 52f, TextAnchor.MiddleCenter, 30,
-                "Post-transplantAR", UITheme.TextPrimary);
-            CreateBarText(mainMenu.transform, "MenuSubtitle", -78f, 44f, TextAnchor.MiddleCenter, 20,
-                "Bir senaryo seçin veya anatomi rehberine gidin.", UITheme.TextMuted);
+            var menuTitleSize = compactBottomSheet ? 26 : 30;
+            var menuTitleH = compactBottomSheet ? 40f : 52f;
+            CreateBarText(mainMenu.transform, "MenuTitle", -12f, menuTitleH, TextAnchor.MiddleCenter, menuTitleSize,
+                "Post-transplantAR", UITheme.TextPrimary, bold: true);
+            CreateBarText(mainMenu.transform, "MenuSubtitle", compactBottomSheet ? -48f : -78f,
+                compactBottomSheet ? 30f : 44f, TextAnchor.MiddleCenter, compactBottomSheet ? 16 : 20,
+                "İyileşme veya ilaç uyumu senaryosu seçin.", UITheme.TextSecondary);
 
             // Kontrolcü kökte kalmalı; MainMenuPanel kapanınca inactive olursa «Ana menü» onClick çalışmaz.
             var menuGo = new GameObject("MenuController");
@@ -146,24 +179,33 @@ namespace LiverAR.EditorTools
             SetField(menu, "controller", controller);
             SetField(nav, "menu", menu);
 
-            float y = 520f;
-            const float step = 100f;
-            const float bw = 520f;
-            const float bh = 82f;
-            CreateButton(mainMenu.transform, "BtnMenuRecovery", "Onarım süreci", new Vector2(0f, y),
+            float y;
+            float step;
+            float bw;
+            float bh;
+            if (compactBottomSheet)
+            {
+                y = 368f;
+                step = CompactButtonStep;
+                bw = CompactButtonWidth;
+                bh = CompactButtonHeight;
+            }
+            else
+            {
+                y = 420f;
+                step = 100f;
+                bw = 520f;
+                bh = 82f;
+            }
+
+            CreateButton(mainMenu.transform, "BtnMenuRecovery", "İyileşme süreci", new Vector2(0f, y),
                 UITheme.Primary, menu.OpenRecovery, bw, bh);
             y -= step;
             CreateButton(mainMenu.transform, "BtnMenuMedication", "İlaç uyumu", new Vector2(0f, y),
                 UITheme.Primary, menu.OpenMedication, bw, bh);
             y -= step;
-            CreateButton(mainMenu.transform, "BtnMenuRejection", "Red / rejeksiyon", new Vector2(0f, y),
-                UITheme.Warning, menu.OpenRejection, bw, bh);
-            y -= step;
-            CreateButton(mainMenu.transform, "BtnMenuLifestyle", "Yaşam tarzı", new Vector2(0f, y),
-                UITheme.Success, menu.OpenLifestyle, bw, bh);
-            y -= step + 12f;
             CreateButton(mainMenu.transform, "BtnMenuAnatomy", "Anatomi rehberi", new Vector2(0f, y),
-                UITheme.PanelAccent, menu.ShowAnatomyMenu, bw, 72f);
+                UITheme.AccentSecondary, menu.ShowAnatomyMenu, bw, bh);
 
             // --- Senaryo ekranı (yalnızca ilgili aksiyonlar) ---
             var scenario = CreateGlassPanel(root.transform, "ScenarioPanel",
@@ -171,35 +213,32 @@ namespace LiverAR.EditorTools
             scenario.SetActive(false);
             CreateAccentBar(scenario.transform, 6f, UITheme.Primary);
 
-            var header = CreateBarText(scenario.transform, "HeaderText", -168f, 44f,
-                TextAnchor.MiddleCenter, 28, "Senaryo", UITheme.TextPrimary);
-            var desc = CreateBarText(scenario.transform, "DescriptionText", -212f, 88f,
-                TextAnchor.MiddleCenter, 20, "", UITheme.TextMuted);
+            var headerTop = compactBottomSheet ? -80f : -168f;
+            var headerH = compactBottomSheet ? 36f : 44f;
+            var headerSize = compactBottomSheet ? 22 : 28;
+            var header = CreateBarText(scenario.transform, "HeaderText", headerTop, headerH,
+                TextAnchor.MiddleCenter, headerSize, "Senaryo", UITheme.TextPrimary, bold: true);
+            var descTop = compactBottomSheet ? -118f : -212f;
+            var descH = compactBottomSheet ? 84f : 88f;
+            var descSize = compactBottomSheet ? 17 : 20;
+            var desc = CreateBarText(scenario.transform, "DescriptionText", descTop, descH,
+                TextAnchor.MiddleCenter, descSize, "", UITheme.TextSecondary);
 
-            dashboard = BuildDashboard(scenario.transform, controller);
+            dashboard = BuildDashboard(scenario.transform, controller, compactBottomSheet);
 
-            var recoveryActions = CreateActionGroup(scenario.transform, "RecoveryActions", 120f);
-            CreateButton(recoveryActions.transform, "BtnNextWeek", "Sonraki hafta", new Vector2(0f, 0f),
-                UITheme.PanelAccent, null, 400f, 72f);
+            var actionBottom = compactBottomSheet ? 16f : 120f;
+            var actionH = compactBottomSheet ? 64f : 72f;
+            var recoveryActions = CreateActionGroup(scenario.transform, "RecoveryActions", actionBottom, actionH);
+            CreateButton(recoveryActions.transform, "BtnNextWeek", "Sonraki haftaya geç", new Vector2(0f, 0f),
+                UITheme.PrimaryDark, null, compactBottomSheet ? CompactButtonWidth : 400f, actionH);
 
-            var medicationActions = CreateActionGroup(scenario.transform, "MedicationActions", 120f);
+            var medicationActions = CreateActionGroup(scenario.transform, "MedicationActions", actionBottom, actionH);
             medicationActions.SetActive(false);
-            CreateButton(medicationActions.transform, "BtnTakeMed", "İlacı al", new Vector2(-110f, 0f),
-                UITheme.Success, null, 220f, 72f);
-            CreateButton(medicationActions.transform, "BtnSkipMed", "İlacı atla", new Vector2(110f, 0f),
-                UITheme.Danger, null, 220f, 72f);
-
-            var rejectionActions = CreateActionGroup(scenario.transform, "RejectionActions", 120f);
-            rejectionActions.SetActive(false);
-            CreateButton(rejectionActions.transform, "BtnAdvanceRej", "Reddi ilerlet", new Vector2(0f, 0f),
-                UITheme.Warning, null, 400f, 72f);
-
-            var lifestyleActions = CreateActionGroup(scenario.transform, "LifestyleActions", 120f);
-            lifestyleActions.SetActive(false);
-            CreateButton(lifestyleActions.transform, "BtnHealthy", "Sağlıklı yaşam", new Vector2(-110f, 0f),
-                UITheme.Success, null, 220f, 72f);
-            CreateButton(lifestyleActions.transform, "BtnFatty", "Yağlı diyet", new Vector2(110f, 0f),
-                UITheme.Danger, null, 220f, 72f);
+            var medBtnW = compactBottomSheet ? 240f : 220f;
+            CreateButton(medicationActions.transform, "BtnTakeMed", "İlacı aldım", new Vector2(-128f, 0f),
+                UITheme.Success, null, medBtnW, actionH);
+            CreateButton(medicationActions.transform, "BtnSkipMed", "Atladım", new Vector2(128f, 0f),
+                UITheme.Danger, null, medBtnW, actionH);
 
             var scenarioHudGo = new GameObject("ScenarioHUD");
             scenarioHudGo.transform.SetParent(scenario.transform, false);
@@ -213,9 +252,6 @@ namespace LiverAR.EditorTools
             WireButton(scenario.transform, "BtnNextWeek", hud.OnNextWeek);
             WireButton(scenario.transform, "BtnTakeMed", hud.OnTakeMedication);
             WireButton(scenario.transform, "BtnSkipMed", hud.OnSkipMedication);
-            WireButton(scenario.transform, "BtnAdvanceRej", hud.OnAdvanceRejection);
-            WireButton(scenario.transform, "BtnHealthy", hud.OnHealthyLifestyle);
-            WireButton(scenario.transform, "BtnFatty", hud.OnFattyDiet);
 
             CreateTopBackBar(scenario.transform, nav);
 
@@ -224,25 +260,24 @@ namespace LiverAR.EditorTools
             SetField(menu, "scenarioPanel", scenario);
             SetField(menu, "recoveryActions", recoveryActions);
             SetField(menu, "medicationActions", medicationActions);
-            SetField(menu, "rejectionActions", rejectionActions);
-            SetField(menu, "lifestyleActions", lifestyleActions);
 
-            // --- Anatomi alt menüsü ---
+            // --- Anatomi alt menüsü (her butonun altında satır içi accordion) ---
             var anatomy = CreateGlassPanel(root.transform, "AnatomyPanel",
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             anatomy.SetActive(false);
-            CreateBarText(anatomy.transform, "AnatomyTitle", -100f, 48f, TextAnchor.MiddleCenter, 26,
-                "Anatomi rehberi", UITheme.TextPrimary);
-            infoPanel = BuildInfoOverlay(root.transform);
+            var aW = compactBottomSheet ? CompactButtonWidth : 480f;
+            var aH = compactBottomSheet ? CompactButtonHeight : 72f;
+            var expandH = compactBottomSheet ? 210f : 260f;
+            var titleTop = compactBottomSheet ? -76f : -100f;
 
-            CreateButton(anatomy.transform, "BtnRightLobe", "Sağ lob", new Vector2(0f, 520f),
-                UITheme.PanelAccent, infoPanel.ShowRightLobe, 480f, 72f);
-            CreateButton(anatomy.transform, "BtnLeftLobe", "Sol lob", new Vector2(0f, 420f),
-                UITheme.PanelAccent, infoPanel.ShowLeftLobe, 480f, 72f);
-            CreateButton(anatomy.transform, "BtnBile", "Safra yolları", new Vector2(0f, 320f),
-                UITheme.PanelAccent, infoPanel.ShowBileDuct, 480f, 72f);
-            CreateButton(anatomy.transform, "BtnCloseInfo", "Kartı kapat", new Vector2(0f, 200f),
-                UITheme.PrimaryDark, infoPanel.Hide, 320f, 64f);
+            CreateBarText(anatomy.transform, "AnatomyTitle", titleTop, 36f, TextAnchor.MiddleCenter, 24,
+                "Anatomi rehberi", UITheme.TextPrimary, bold: true);
+
+            infoPanel = BuildAnatomyAccordionList(anatomy.transform, aW, aH, expandH, compactBottomSheet);
+
+            WireButton(anatomy.transform, "BtnRightLobe", infoPanel.ShowRightLobe);
+            WireButton(anatomy.transform, "BtnLeftLobe", infoPanel.ShowLeftLobe);
+            WireButton(anatomy.transform, "BtnBile", infoPanel.ShowBileDuct);
 
             CreateTopBackBar(anatomy.transform, nav);
 
@@ -291,18 +326,10 @@ namespace LiverAR.EditorTools
             lbl.fontSize = 22;
             lbl.fontStyle = FontStyle.Bold;
             lbl.alignment = TextAnchor.MiddleCenter;
-            lbl.color = UITheme.TextPrimary;
+            lbl.color = UITheme.TextOnPrimary;
             lbl.text = "← Ana menü";
 
             bar.transform.SetAsLastSibling();
-        }
-
-        private static void CreateViewportHint(Transform canvas, string message)
-        {
-            var hint = CreateBarText(canvas, "ViewportHint", -200f, 56f,
-                TextAnchor.MiddleCenter, 20, message,
-                new Color(0.55f, 0.62f, 0.72f, 0.55f));
-            hint.raycastTarget = false;
         }
 
         private static GameObject CreateGlassPanel(Transform parent, string name,
@@ -311,7 +338,7 @@ namespace LiverAR.EditorTools
             return CreatePanel(parent, name, anchorMin, anchorMax, offsetMin, offsetMax, UITheme.GlassPanel);
         }
 
-        private static GameObject CreateActionGroup(Transform parent, string name, float bottom)
+        private static GameObject CreateActionGroup(Transform parent, string name, float bottom, float height)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -320,7 +347,7 @@ namespace LiverAR.EditorTools
             rt.anchorMax = new Vector2(0.5f, 0f);
             rt.pivot = new Vector2(0.5f, 0f);
             rt.anchoredPosition = new Vector2(0f, bottom);
-            rt.sizeDelta = new Vector2(600f, 80f);
+            rt.sizeDelta = new Vector2(CompactButtonWidth + 40f, height);
             return go;
         }
 
@@ -348,20 +375,34 @@ namespace LiverAR.EditorTools
                 color ?? UITheme.Primary);
         }
 
-        private static ClinicalDashboard BuildDashboard(Transform parent, SimulationController controller)
+        private static ClinicalDashboard BuildDashboard(Transform parent, SimulationController controller,
+            bool compact)
         {
-            var panel = CreatePanel(parent, "ClinicalDashboard",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(20f, -300f), new Vector2(-20f, -640f),
-                new Color(0.09f, 0.12f, 0.18f, 0.98f));
+            GameObject panel;
+            if (compact)
+            {
+                panel = CreatePanel(parent, "ClinicalDashboard",
+                    new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(12f, 88f), new Vector2(-12f, 248f),
+                    UITheme.Card);
+            }
+            else
+            {
+                panel = CreatePanel(parent, "ClinicalDashboard",
+                    new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(20f, -300f), new Vector2(-20f, -640f),
+                    UITheme.Card);
+            }
+
             panel.GetComponent<Image>().raycastTarget = true;
 
+            var healthRowH = compact ? 44f : 56f;
             var healthRow = CreatePanel(panel.transform, "HealthRow",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -72f), new Vector2(-16f, -16f),
-                new Color(0.06f, 0.08f, 0.12f, 1f));
+                new Vector2(0f, 1f), new Vector2(1f, 1f),
+                new Vector2(8f, -healthRowH), new Vector2(-8f, -4f),
+                UITheme.Panel);
 
             var fillBg = CreatePanel(healthRow.transform, "HealthBg",
-                new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(12f, -12f), new Vector2(-12f, 12f),
-                new Color(0.18f, 0.2f, 0.26f, 1f));
+                new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(8f, -8f), new Vector2(-8f, 8f),
+                new Color(0.16f, 0.18f, 0.24f, 1f));
             var fill = CreatePanel(fillBg.transform, "HealthFill",
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UITheme.HealthGood);
             var fillImg = fill.GetComponent<Image>();
@@ -369,48 +410,37 @@ namespace LiverAR.EditorTools
             fillImg.fillMethod = Image.FillMethod.Horizontal;
             fillImg.fillAmount = 1f;
 
-            var healthLabel = CreateBarText(healthRow.transform, "HealthLabel", -28f, 40f,
-                TextAnchor.MiddleLeft, 22, "Organ sağlığı %100", UITheme.TextPrimary);
-            healthLabel.rectTransform.offsetMin = new Vector2(16f, healthLabel.rectTransform.offsetMin.y);
-            healthLabel.rectTransform.offsetMax = new Vector2(-16f, healthLabel.rectTransform.offsetMax.y);
+            var healthLabel = CreateBarText(healthRow.transform, "HealthLabel", -22f, 32f,
+                TextAnchor.MiddleLeft, compact ? 17 : 22, "Genel durum: %100", UITheme.TextPrimary);
+            healthLabel.rectTransform.offsetMin = new Vector2(12f, healthLabel.rectTransform.offsetMin.y);
+            healthLabel.rectTransform.offsetMax = new Vector2(-12f, healthLabel.rectTransform.offsetMax.y);
 
-            var ast = CreateBarText(panel.transform, "AST", -120f, 36f,
-                TextAnchor.MiddleLeft, 20, "AST —", UITheme.TextMuted);
-            ast.rectTransform.offsetMin = new Vector2(20f, ast.rectTransform.offsetMin.y);
-            var alt = CreateBarText(panel.transform, "ALT", -120f, 36f,
-                TextAnchor.MiddleCenter, 20, "ALT —", UITheme.TextMuted);
-            var bili = CreateBarText(panel.transform, "Bili", -120f, 36f,
-                TextAnchor.MiddleRight, 20, "Bilirubin —", UITheme.TextMuted);
-            bili.rectTransform.offsetMax = new Vector2(-20f, bili.rectTransform.offsetMax.y);
+            var labTop = compact ? -78f : -120f;
+            var labH = compact ? 28f : 36f;
+            var labSize = compact ? 16 : 20;
+            var ast = CreateBarText(panel.transform, "AST", labTop, labH,
+                TextAnchor.MiddleLeft, labSize, "AST —", UITheme.LabNormal);
+            ast.rectTransform.offsetMin = new Vector2(14f, ast.rectTransform.offsetMin.y);
+            var alt = CreateBarText(panel.transform, "ALT", labTop, labH,
+                TextAnchor.MiddleCenter, labSize, "ALT —", UITheme.LabNormal);
+            var bili = CreateBarText(panel.transform, "Bili", labTop, labH,
+                TextAnchor.MiddleRight, labSize, "Bilirubin —", UITheme.LabNormal);
+            bili.rectTransform.offsetMax = new Vector2(-14f, bili.rectTransform.offsetMax.y);
 
             var warning = CreatePanel(panel.transform, "Warning",
-                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(12f, 12f), new Vector2(-12f, 56f),
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(8f, 8f), new Vector2(-8f, 52f),
                 UITheme.Danger);
             warning.SetActive(false);
-            var warnText = CreateBarText(warning.transform, "WarnText", -28f, 44f,
-                TextAnchor.MiddleCenter, 19, "Uyarı", UITheme.TextPrimary);
-
-            var rej = CreatePanel(panel.transform, "RejectionDetail",
-                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(12f, 64f), new Vector2(-12f, 220f),
-                new Color(0.14f, 0.1f, 0.12f, 1f));
-            rej.SetActive(false);
-            var sym = CreateBarText(rej.transform, "Symptom", -8f, 52f, TextAnchor.UpperLeft, 17,
-                "Semptom:", UITheme.TextMuted);
-            sym.rectTransform.offsetMin = new Vector2(14f, sym.rectTransform.offsetMin.y);
-            var clin = CreateBarText(rej.transform, "Clinical", -60f, 52f, TextAnchor.UpperLeft, 17,
-                "Klinik:", UITheme.TextMuted);
-            clin.rectTransform.offsetMin = new Vector2(14f, clin.rectTransform.offsetMin.y);
-            var act = CreateBarText(rej.transform, "Action", -112f, 56f, TextAnchor.UpperLeft, 17,
-                "Eylem:", UITheme.Warning);
-            act.rectTransform.offsetMin = new Vector2(14f, act.rectTransform.offsetMin.y);
+            var warnText = CreateBarText(warning.transform, "WarnText", -24f, 40f,
+                TextAnchor.MiddleCenter, compact ? 15 : 19, "Uyarı", UITheme.TextOnDanger);
 
             var medRoot = CreatePanel(panel.transform, "MedReminder",
-                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(12f, 230f), new Vector2(-12f, 278f),
-                UITheme.Panel);
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(8f, 58f), new Vector2(-8f, 108f),
+                UITheme.PanelAccent);
             medRoot.SetActive(false);
-            var medLabel = CreateBarText(medRoot.transform, "MedLabel", -24f, 40f,
-                TextAnchor.MiddleLeft, 19, "Bugün immünosupresif ilacını aldım", UITheme.TextPrimary);
-            medLabel.rectTransform.offsetMin = new Vector2(16f, medLabel.rectTransform.offsetMin.y);
+            var medLabel = CreateBarText(medRoot.transform, "MedLabel", -22f, 36f,
+                TextAnchor.MiddleLeft, compact ? 15 : 19, "Bugün immünosupresif ilacımı aldım", UITheme.TextPrimary);
+            medLabel.rectTransform.offsetMin = new Vector2(14f, medLabel.rectTransform.offsetMin.y);
 
             var toggleGo = new GameObject("MedToggle");
             toggleGo.transform.SetParent(medRoot.transform, false);
@@ -430,10 +460,6 @@ namespace LiverAR.EditorTools
             SetField(dash, "bilirubinText", bili);
             SetField(dash, "warningRoot", warning);
             SetField(dash, "warningText", warnText);
-            SetField(dash, "rejectionDetailRoot", rej);
-            SetField(dash, "symptomText", sym);
-            SetField(dash, "clinicalDetailText", clin);
-            SetField(dash, "actionText", act);
             SetField(dash, "medicationReminderRoot", medRoot);
             SetField(dash, "medicationReminderLabel", medLabel);
             SetField(dash, "medicationTakenToggle", toggleGo.GetComponent<Toggle>());
@@ -441,44 +467,211 @@ namespace LiverAR.EditorTools
             return dash;
         }
 
-        /// <summary>Tam ekran karartma + kart; tüm panellerden sonra eklenir (üstte çizilir).</summary>
-        private static LiverAnatomyInfoPanel BuildInfoOverlay(Transform educationRoot)
+        /// <summary>Buton → detay → buton → detay … dikey liste; detay ilgili butonun hemen altında açılır.</summary>
+        private static LiverAnatomyInfoPanel BuildAnatomyAccordionList(Transform anatomyPanel,
+            float buttonWidth, float buttonHeight, float expandedHeight, bool compact)
         {
-            var overlay = CreatePanel(educationRoot, "InfoOverlayLayer",
-                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero,
-                new Color(0f, 0f, 0f, 0.62f));
-            overlay.SetActive(false);
-            var dimmerImg = overlay.GetComponent<Image>();
-            dimmerImg.raycastTarget = true;
+            var listGo = new GameObject("AnatomyList");
+            listGo.transform.SetParent(anatomyPanel, false);
+            var listRt = listGo.AddComponent<RectTransform>();
+            listRt.anchorMin = new Vector2(0f, 0f);
+            listRt.anchorMax = new Vector2(1f, 1f);
+            listRt.offsetMin = new Vector2(12f, 16f);
+            listRt.offsetMax = new Vector2(-12f, -120f);
 
-            var card = CreatePanel(overlay.transform, "InfoCard",
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(-360f, -240f), new Vector2(360f, 240f),
-                UITheme.BackgroundDark);
-            var cardImg = card.GetComponent<Image>();
-            cardImg.raycastTarget = true;
-            CreateAccentBar(card.transform, 6f, UITheme.Primary);
+            var layout = listGo.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 6f;
+            layout.padding = new RectOffset(0, 0, 4, 8);
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
 
-            var title = CreateBarText(card.transform, "Title", -24f, 52f,
-                TextAnchor.MiddleCenter, 30, "Bilgi", UITheme.TextPrimary);
-            var body = CreateBarText(card.transform, "Body", -300f, 200f,
-                TextAnchor.UpperCenter, 22, "", UITheme.TextMuted);
+            CreateAnatomyLayoutButton(listGo.transform, "BtnRightLobe", "Sağ lob",
+                UITheme.PanelAccent, buttonWidth, buttonHeight);
+            var rightDetail = CreateAnatomyDetailSlot(listGo.transform, "DetailRightLobe",
+                buttonWidth + 16f, expandedHeight, compact);
 
-            var closeBtn = CreateButton(card.transform, "BtnCardClose", "Kapat",
-                new Vector2(0f, 24f), UITheme.Primary, null, 220f, 56f);
+            CreateAnatomyLayoutButton(listGo.transform, "BtnLeftLobe", "Sol lob",
+                UITheme.PanelAccent, buttonWidth, buttonHeight);
+            var leftDetail = CreateAnatomyDetailSlot(listGo.transform, "DetailLeftLobe",
+                buttonWidth + 16f, expandedHeight, compact);
 
-            var infoGo = new GameObject("AnatomyInfo");
-            infoGo.transform.SetParent(educationRoot, false);
-            var info = infoGo.AddComponent<LiverAnatomyInfoPanel>();
-            SetField(info, "overlayRoot", overlay);
-            SetField(info, "cardRoot", card);
-            SetField(info, "titleText", title);
-            SetField(info, "bodyText", body);
-            SetField(info, "closeButton", closeBtn.GetComponent<Button>());
-            UnityEventTools.AddVoidPersistentListener(closeBtn.GetComponent<Button>().onClick, info.Hide);
+            CreateAnatomyLayoutButton(listGo.transform, "BtnBile", "Safra yolları",
+                UITheme.PanelAccent, buttonWidth, buttonHeight);
+            var bileDetail = CreateAnatomyDetailSlot(listGo.transform, "DetailBileDuct",
+                buttonWidth + 16f, expandedHeight, compact);
 
-            overlay.transform.SetAsLastSibling();
+            var info = listGo.AddComponent<LiverAnatomyInfoPanel>();
+            SetAnatomySlot(info, "rightLobeSlot", rightDetail);
+            SetAnatomySlot(info, "leftLobeSlot", leftDetail);
+            SetAnatomySlot(info, "bileDuctSlot", bileDetail);
+            SetPropertyFloat(info, "expandedHeight", expandedHeight);
+            SetPropertyFloat(info, "expandSpeed", 720f);
+
             return info;
+        }
+
+        private sealed class AnatomyDetailBuilt
+        {
+            public GameObject Root;
+            public LayoutElement Layout;
+            public Text Title;
+            public Text Body;
+        }
+
+        private static void CreateAnatomyLayoutButton(Transform parent, string name, string label,
+            Color color, float width, float height)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+
+            var le = go.AddComponent<LayoutElement>();
+            le.minHeight = height;
+            le.preferredHeight = height;
+            le.preferredWidth = width;
+
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
+            shadow.effectDistance = new Vector2(0f, -3f);
+
+            var img = go.AddComponent<Image>();
+            img.color = color;
+            go.AddComponent<Button>();
+
+            var lblGo = new GameObject("Label");
+            lblGo.transform.SetParent(go.transform, false);
+            Stretch(lblGo.AddComponent<RectTransform>());
+            var lbl = lblGo.AddComponent<Text>();
+            lbl.font = GetFont();
+            lbl.fontSize = Mathf.Max(18, Mathf.RoundToInt(height * 0.3f));
+            lbl.fontStyle = FontStyle.Bold;
+            lbl.alignment = TextAnchor.MiddleCenter;
+            lbl.color = UITheme.TextOnPrimary;
+            lbl.text = label;
+        }
+
+        private static AnatomyDetailBuilt CreateAnatomyDetailSlot(Transform parent, string name,
+            float width, float expandedHeight, bool compact)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.SetActive(false);
+
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredWidth = width;
+            le.preferredHeight = 0f;
+            le.flexibleHeight = 0f;
+
+            var img = go.AddComponent<Image>();
+            img.color = UITheme.Card;
+            go.AddComponent<RectMask2D>();
+            CreateAccentBar(go.transform, 3f, UITheme.Primary);
+
+            var titleSize = compact ? 18 : 22;
+            var bodySize = compact ? 14 : 17;
+            var titleH = 30f;
+            var bodyH = expandedHeight - titleH - 16f;
+
+            var title = CreateBarText(go.transform, "DetailTitle", -8f, titleH,
+                TextAnchor.MiddleLeft, titleSize, "", UITheme.TextPrimary, bold: true);
+            title.alignment = TextAnchor.MiddleLeft;
+            title.rectTransform.offsetMin = new Vector2(12f, title.rectTransform.offsetMin.y);
+            title.rectTransform.offsetMax = new Vector2(-12f, title.rectTransform.offsetMax.y);
+
+            var body = CreateBarText(go.transform, "DetailBody", -titleH - 6f, bodyH,
+                TextAnchor.UpperLeft, bodySize, "", UITheme.TextSecondary);
+            body.alignment = TextAnchor.UpperLeft;
+            body.horizontalOverflow = HorizontalWrapMode.Wrap;
+            body.verticalOverflow = VerticalWrapMode.Overflow;
+            body.rectTransform.offsetMin = new Vector2(12f, body.rectTransform.offsetMin.y);
+            body.rectTransform.offsetMax = new Vector2(-12f, body.rectTransform.offsetMax.y);
+
+            return new AnatomyDetailBuilt
+            {
+                Root = go,
+                Layout = le,
+                Title = title,
+                Body = body
+            };
+        }
+
+        private static void SetAnatomySlot(LiverAnatomyInfoPanel info, string slotProperty,
+            AnatomyDetailBuilt built)
+        {
+            var so = new SerializedObject(info);
+            var slot = so.FindProperty(slotProperty);
+            if (slot == null)
+            {
+                Debug.LogWarning($"[EducationUIBuilder] Slot yok: {slotProperty}");
+                return;
+            }
+
+            slot.FindPropertyRelative("detailRoot").objectReferenceValue = built.Root;
+            slot.FindPropertyRelative("layoutElement").objectReferenceValue = built.Layout;
+            slot.FindPropertyRelative("titleText").objectReferenceValue = built.Title;
+            slot.FindPropertyRelative("bodyText").objectReferenceValue = built.Body;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static GameObject CreateTopAnchoredPanel(Transform parent, string name, float topY,
+            float width, float height, Color color)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, topY);
+            rt.sizeDelta = new Vector2(width, height);
+            var img = go.AddComponent<Image>();
+            img.color = color;
+            return go;
+        }
+
+        private static GameObject CreateTopButton(Transform parent, string name, string label,
+            float topY, Color color, UnityAction action, float w, float h)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, topY);
+            rt.sizeDelta = new Vector2(w, h);
+
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
+            shadow.effectDistance = new Vector2(0f, -3f);
+
+            var img = go.AddComponent<Image>();
+            img.color = color;
+            var btn = go.AddComponent<Button>();
+            var cb = btn.colors;
+            cb.highlightedColor = Color.Lerp(color, Color.white, 0.12f);
+            cb.pressedColor = Color.Lerp(color, Color.black, 0.15f);
+            cb.selectedColor = color;
+            btn.colors = cb;
+
+            if (action != null)
+            {
+                UnityEventTools.AddVoidPersistentListener(btn.onClick, action);
+            }
+
+            var lblGo = new GameObject("Label");
+            lblGo.transform.SetParent(go.transform, false);
+            Stretch(lblGo.AddComponent<RectTransform>());
+            var lbl = lblGo.AddComponent<Text>();
+            lbl.font = GetFont();
+            lbl.fontSize = Mathf.Max(18, Mathf.RoundToInt(h * 0.3f));
+            lbl.fontStyle = FontStyle.Bold;
+            lbl.alignment = TextAnchor.MiddleCenter;
+            lbl.color = UITheme.TextOnPrimary;
+            lbl.text = label;
+            return go;
         }
 
         private static SafetyDisclaimerScreen BuildDisclaimer(Transform canvas)
@@ -569,14 +762,14 @@ namespace LiverAR.EditorTools
             lbl.fontSize = Mathf.Max(18, Mathf.RoundToInt(h * 0.3f));
             lbl.fontStyle = FontStyle.Bold;
             lbl.alignment = TextAnchor.MiddleCenter;
-            lbl.color = UITheme.TextPrimary;
+            lbl.color = UITheme.TextOnPrimary;
             lbl.text = label;
             return go;
         }
 
-        /// <summary>Üst şerit metni — ortadaki beyaz çizgi artefaktını önler.</summary>
+        /// <summary>Üst şerit metni — koyu panel üzerinde okunaklı.</summary>
         private static Text CreateBarText(Transform parent, string name, float topOffset, float height,
-            TextAnchor align, int size, string content, Color color)
+            TextAnchor align, int size, string content, Color color, bool bold = false)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -585,16 +778,36 @@ namespace LiverAR.EditorTools
             rt.anchorMax = new Vector2(1f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0f, topOffset);
-            rt.sizeDelta = new Vector2(0f, height);
+            rt.sizeDelta = new Vector2(-24f, height);
+            rt.offsetMin = new Vector2(12f, rt.offsetMin.y);
+            rt.offsetMax = new Vector2(-12f, rt.offsetMax.y);
             var text = go.AddComponent<Text>();
             text.font = GetFont();
             text.fontSize = size;
+            text.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
             text.alignment = align;
             text.color = color;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.text = content;
+            if (bold)
+            {
+                AddTextShadow(text);
+            }
+
             return text;
+        }
+
+        private static void AddTextShadow(Text text)
+        {
+            if (text.GetComponent<Shadow>() != null)
+            {
+                return;
+            }
+
+            var shadow = text.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.5f);
+            shadow.effectDistance = new Vector2(1f, -1f);
         }
 
         private static Text CreateText(Transform parent, string name, Vector2 anchor,
@@ -642,6 +855,19 @@ namespace LiverAR.EditorTools
             }
 
             prop.objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetPropertyFloat(Object target, string property, float value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(property);
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.floatValue = value;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
     }

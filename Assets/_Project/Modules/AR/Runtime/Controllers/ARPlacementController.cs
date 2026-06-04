@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LiverAR.Modules.Visuals.Runtime;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -21,6 +22,14 @@ namespace LiverAR.Modules.AR.Runtime.Controllers
         private GameObject _spawnedObject;
         private bool _placementEnabled;
 
+        private void Start()
+        {
+            if (liverPrefab == null)
+            {
+                Debug.LogError("[ARPlacement] liverPrefab boş — Post-transplantAR > Import Liver Model veya Build AR Scene çalıştır.");
+            }
+        }
+
         /// <summary>Model ilk kez yerleştirildiğinde tetiklenir.</summary>
         public event Action<GameObject> ModelPlaced;
 
@@ -36,36 +45,74 @@ namespace LiverAR.Modules.AR.Runtime.Controllers
             _placementEnabled = value;
         }
 
-        public bool TryPlaceFromScreenTap(Vector2 screenPosition)
+        public bool TryPlaceFromScreenTap(Vector2 screenPosition, bool allowFallbackInFrontOfCamera = false)
         {
-            if (requirePlaneBeforePlacement && !_placementEnabled)
+            if (requirePlaneBeforePlacement && !_placementEnabled && !allowFallbackInFrontOfCamera)
             {
                 return false;
             }
 
-            if (raycastManager == null || liverPrefab == null)
+            if (liverPrefab == null)
+            {
+                Debug.LogWarning("[ARPlacement] Yerleştirme iptal: liverPrefab atanmadı.");
+                return false;
+            }
+
+            Pose pose;
+            if (raycastManager != null &&
+                raycastManager.Raycast(screenPosition, Hits, TrackableType.PlaneWithinPolygon))
+            {
+                pose = Hits[0].pose;
+            }
+            else if (allowFallbackInFrontOfCamera && TryGetPoseInFrontOfCamera(out pose))
+            {
+                // Düzlem henüz yoksa bile demo için kameranın önüne yerleştir.
+            }
+            else
             {
                 return false;
             }
 
-            if (!raycastManager.Raycast(screenPosition, Hits, TrackableType.PlaneWithinPolygon))
-            {
-                return false;
-            }
+            ApplyPose(pose);
+            return true;
+        }
 
-            var hitPose = Hits[0].pose;
+        public bool TryPlaceAtViewportCenter(bool allowFallbackInFrontOfCamera = true)
+        {
+            var center = new Vector2(Screen.width * 0.5f, Screen.height * 0.55f);
+            return TryPlaceFromScreenTap(center, allowFallbackInFrontOfCamera);
+        }
 
+        private void ApplyPose(Pose pose)
+        {
             if (_spawnedObject == null)
             {
-                _spawnedObject = Instantiate(liverPrefab, hitPose.position, hitPose.rotation);
+                _spawnedObject = Instantiate(liverPrefab, pose.position, pose.rotation);
+                LiverRenderBootstrap.EnsureVisible(_spawnedObject);
+                Debug.Log($"[ARPlacement] Model yerleştirildi: {_spawnedObject.transform.position}");
                 ModelPlaced?.Invoke(_spawnedObject);
             }
             else
             {
-                _spawnedObject.transform.SetPositionAndRotation(hitPose.position, hitPose.rotation);
+                _spawnedObject.transform.SetPositionAndRotation(pose.position, pose.rotation);
                 ModelMoved?.Invoke(_spawnedObject);
             }
+        }
 
+        private static bool TryGetPoseInFrontOfCamera(out Pose pose)
+        {
+            var cam = Camera.main;
+            if (cam == null)
+            {
+                pose = default;
+                Debug.LogWarning("[ARPlacement] Camera.main yok; fallback yerleştirme başarısız.");
+                return false;
+            }
+
+            var forward = cam.transform.forward;
+            var position = cam.transform.position + forward * 0.45f;
+            var rotation = Quaternion.LookRotation(-forward, Vector3.up);
+            pose = new Pose(position, rotation);
             return true;
         }
     }

@@ -84,6 +84,11 @@ namespace LiverAR.Bootstrap
         private void OnEducationFlowComplete()
         {
             _educationFlowComplete = true;
+            if (educationFlow != null)
+            {
+                educationFlow.SetEducationPanelVisible(false);
+            }
+
             RefreshPlacementGate();
         }
 

@@ -6,7 +6,6 @@ namespace LiverAR.Modules.UI.Runtime.Screens
 {
     /// <summary>
     /// Referans FlowManager yaklaşımı: aynı anda tek panel (Ana Menü / Senaryo / Anatomi).
-    /// Tüm butonlar bir ekranda değil; menüden senaryoya girilir.
     /// </summary>
     public sealed class EducationMenuController : MonoBehaviour
     {
@@ -22,8 +21,6 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         [Header("Senaryo aksiyon grupları")]
         [SerializeField] private GameObject recoveryActions;
         [SerializeField] private GameObject medicationActions;
-        [SerializeField] private GameObject rejectionActions;
-        [SerializeField] private GameObject lifestyleActions;
 
         private void Start()
         {
@@ -58,18 +55,6 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             ShowScenarioPanel(ScenarioType.Medication);
         }
 
-        public void OpenRejection()
-        {
-            scenarioHud?.OnRejectionSelected();
-            ShowScenarioPanel(ScenarioType.Rejection);
-        }
-
-        public void OpenLifestyle()
-        {
-            scenarioHud?.OnLifestyleSelected();
-            ShowScenarioPanel(ScenarioType.Lifestyle);
-        }
-
         private void ShowScenarioPanel(ScenarioType type)
         {
             SetPanel(mainMenuPanel, false);
@@ -84,16 +69,6 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             if (medicationActions != null)
             {
                 medicationActions.SetActive(type == ScenarioType.Medication);
-            }
-
-            if (rejectionActions != null)
-            {
-                rejectionActions.SetActive(type == ScenarioType.Rejection);
-            }
-
-            if (lifestyleActions != null)
-            {
-                lifestyleActions.SetActive(type == ScenarioType.Lifestyle);
             }
         }
 

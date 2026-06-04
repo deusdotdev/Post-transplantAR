@@ -1,63 +1,130 @@
 using LiverAR.Modules.AR.Runtime.Controllers;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace LiverAR.Modules.Interaction.Runtime.Input
 {
     /// <summary>
-    /// Yerleştirilen modele dokunma jestleriyle döndürme ve ölçekleme uygular.
-    /// Tek parmak yatay sürükleme = döndürme, iki parmak pinch = ölçekleme.
-    /// README'deki "döndürme, ölçekleme" etkileşim hedefini karşılar.
+    /// Karaciğer modelini sürekli yatay eksende döndürür; sürükleyerek manuel döndürme de mümkündür.
+    /// İki parmak pinch ile ölçekleme yalnızca AR yerleştirme modunda.
     /// </summary>
     public sealed class ModelManipulator : MonoBehaviour
     {
         [SerializeField] private ARPlacementController placementController;
+        [Tooltip("Önizleme sahnesinde döndürülecek model (AR'de yerleştirilen nesne kullanılır).")]
+        [SerializeField] private Transform previewTarget;
 
         [Header("Döndürme")]
-        [SerializeField] private float rotationSpeed = 0.2f;
+        [SerializeField] private float rotationSpeed = 0.95f;
+        [SerializeField] private float mouseRotationSpeed = 10f;
+        [SerializeField] private bool enableMouseDrag = true;
 
-        [Header("Ölçekleme")]
+        [Header("Otomatik dönüş")]
+        [SerializeField] private bool enableAutoRotate = true;
+        [Tooltip("Saniyede derece (yatay eksen, turntable).")]
+        [SerializeField] private float autoRotateDegreesPerSecond = 22f;
+        [Tooltip("Elle döndürdükten sonra otomatik dönüşün yeniden başlaması için bekleme (sn).")]
+        [SerializeField] private float autoRotateResumeDelay = 0.45f;
+
+        [Tooltip("Açıksa yalnızca ekranın üst bölgesinde sürükleme döndürür (alt menüye dokunulmaz).")]
+        [SerializeField] private bool limitToUpperViewport = true;
+        [SerializeField] [Range(0f, 1f)] private float viewportMinYNormalized = 0.36f;
+
+        [Header("Ölçekleme (AR, iki parmak)")]
         [SerializeField] private float scaleSpeed = 0.005f;
         [SerializeField] private float minScale = 0.2f;
         [SerializeField] private float maxScale = 3f;
 
         private float _previousPinchDistance;
+        private float _lastManualRotateTime = -999f;
 
         private void Update()
         {
-            if (placementController == null || !placementController.HasModel)
+            var target = ResolveTarget();
+            if (target == null)
             {
                 return;
             }
 
-            var target = placementController.SpawnedObject.transform;
+            var userManipulating = false;
 
-            switch (UnityEngine.Input.touchCount)
+            if (placementController != null && placementController.HasModel &&
+                UnityEngine.Input.touchCount == 2)
             {
-                case 1:
-                    HandleRotation(target);
-                    break;
-                case 2:
-                    HandleScale(target);
-                    break;
-                default:
-                    _previousPinchDistance = 0f;
-                    break;
+                userManipulating = true;
+                HandlePinchScale(target);
+            }
+            else if (UnityEngine.Input.touchCount == 1)
+            {
+                userManipulating = HandleTouchRotation(target);
+            }
+            else if (enableMouseDrag && UnityEngine.Input.GetMouseButton(0))
+            {
+                userManipulating = HandleMouseRotation(target);
+            }
+            else
+            {
+                _previousPinchDistance = 0f;
+            }
+
+            if (userManipulating)
+            {
+                _lastManualRotateTime = Time.time;
+            }
+            else if (enableAutoRotate && Time.time - _lastManualRotateTime >= autoRotateResumeDelay)
+            {
+                target.Rotate(Vector3.up, autoRotateDegreesPerSecond * Time.deltaTime, Space.World);
             }
         }
 
-        private void HandleRotation(Transform target)
+        private Transform ResolveTarget()
+        {
+            if (placementController != null && placementController.HasModel)
+            {
+                return placementController.SpawnedObject.transform;
+            }
+
+            return previewTarget;
+        }
+
+        private bool HandleTouchRotation(Transform target)
         {
             var touch = UnityEngine.Input.GetTouch(0);
-            if (touch.phase != TouchPhase.Moved)
+            if (!IsInRotateZone(touch.position) || IsOverUi(touch.fingerId))
             {
-                return;
+                return false;
             }
 
-            // Tek parmakla yapılan yerleştirme dokunuşuyla çakışmaması için sadece sürüklemede döndür.
-            target.Rotate(Vector3.up, -touch.deltaPosition.x * rotationSpeed, Space.World);
+            if (touch.phase == TouchPhase.Moved)
+            {
+                ApplyRotationDelta(target, touch.deltaPosition.x, touch.deltaPosition.y, rotationSpeed);
+                return true;
+            }
+
+            return touch.phase is TouchPhase.Began or TouchPhase.Stationary;
         }
 
-        private void HandleScale(Transform target)
+        private bool HandleMouseRotation(Transform target)
+        {
+            if (!IsInRotateZone(UnityEngine.Input.mousePosition) || IsOverUi())
+            {
+                return false;
+            }
+
+            ApplyRotationDelta(target,
+                UnityEngine.Input.GetAxis("Mouse X"),
+                UnityEngine.Input.GetAxis("Mouse Y"),
+                mouseRotationSpeed);
+            return true;
+        }
+
+        private static void ApplyRotationDelta(Transform target, float deltaX, float deltaY, float speed)
+        {
+            target.Rotate(Vector3.up, -deltaX * speed, Space.World);
+            target.Rotate(Vector3.right, deltaY * speed * 0.65f, Space.World);
+        }
+
+        private void HandlePinchScale(Transform target)
         {
             var touch0 = UnityEngine.Input.GetTouch(0);
             var touch1 = UnityEngine.Input.GetTouch(1);
@@ -75,6 +142,28 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
             var uniform = target.localScale.x + delta * scaleSpeed;
             uniform = Mathf.Clamp(uniform, minScale, maxScale);
             target.localScale = new Vector3(uniform, uniform, uniform);
+        }
+
+        private bool IsInRotateZone(Vector2 screenPosition)
+        {
+            if (!limitToUpperViewport)
+            {
+                return true;
+            }
+
+            return screenPosition.y >= Screen.height * viewportMinYNormalized;
+        }
+
+        private static bool IsOverUi(int fingerId = -1)
+        {
+            if (EventSystem.current == null)
+            {
+                return false;
+            }
+
+            return fingerId >= 0
+                ? EventSystem.current.IsPointerOverGameObject(fingerId)
+                : EventSystem.current.IsPointerOverGameObject();
         }
     }
 }

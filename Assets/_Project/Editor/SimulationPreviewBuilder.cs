@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.IO;
+using LiverAR.Modules.Interaction.Runtime.Input;
 using LiverAR.Modules.Simulation.Runtime;
 using LiverAR.Modules.Simulation.Runtime.Data;
 using LiverAR.Modules.UI.Runtime.Screens;
@@ -60,22 +61,40 @@ namespace LiverAR.EditorTools
 
             // --- Karaciğer: indirilen model prefab'ı varsa onu, yoksa procedural mesh'i kullan ---
             var liver = CreateLiver(state);
-            liver.transform.position = new Vector3(0f, 1.05f, 0.35f);
-            FrameCamera(cam, liver);
+            liver.transform.position = new Vector3(0f, 1.35f, 0.4f);
+            liver.transform.localScale *= 2.5f;
+            LiverRenderBootstrap.EnsureVisible(liver);
+
+            var manipulator = liver.AddComponent<ModelManipulator>();
+            SetField(manipulator, "previewTarget", liver.transform);
+            SetFieldBool(manipulator, "enableMouseDrag", true);
+            SetFieldBool(manipulator, "limitToUpperViewport", true);
+            SetPropertyFloat(manipulator, "viewportMinYNormalized", 0.30f);
+            SetPropertyFloat(manipulator, "rotationSpeed", 0.95f);
+            SetPropertyFloat(manipulator, "mouseRotationSpeed", 10f);
+            SetFieldBool(manipulator, "enableAutoRotate", true);
+            SetPropertyFloat(manipulator, "autoRotateDegreesPerSecond", 22f);
+            SetPropertyFloat(manipulator, "autoRotateResumeDelay", 0.45f);
+
+            FrameCameraUpperViewport(cam, liver);
+            cam.rect = new Rect(0f, 0.30f, 1f, 0.70f);
 
             // --- UI (zengin eğitim paneli; önizlemede tam ekran) ---
             var canvasGo = CreateCanvas();
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.05f, 0.07f, 0.1f);
+            cam.backgroundColor = LiverAR.Modules.UI.Runtime.Theme.UITheme.ViewportBackground;
+            // Alt menü + üstte 3D karaciğer görünsün (tam ekran Backdrop modeli gizliyordu).
             EducationUIBuilder.Build(canvasGo.transform, state, includeArStatusStrip: false,
-                compactBottomSheet: false);
+                compactBottomSheet: true);
 
             EnsureEventSystem();
 
             SaveScene(scene);
             EditorUtility.DisplayDialog("Önizleme sahnesi yenilendi",
-                "Yeni koyu tema UI kuruldu.\n\nPlay'e basmadan önce ▶ kapalı olsun.\n" +
-                "Eski mavi düğmeli görünüm = bu komutu çalıştırmadan kalmış sahnedir.",
+                "Üstte karaciğer 3D, altta menü.\n\n" +
+                "Döndürme: üst siyah alanda fareyle sürükle (veya telefonda tek parmak).\n\n" +
+                "Play'e basmadan önce ▶ kapalı olsun.\n" +
+                "Gerçek AR için: Build AR Scene + ARMain sahnesi.",
                 "Tamam");
             Debug.Log("[SimulationPreviewBuilder] Önizleme sahnesi kuruldu: " + ScenePath);
         }
@@ -124,13 +143,14 @@ namespace LiverAR.EditorTools
             return liver;
         }
 
-        private static void FrameCamera(Camera cam, GameObject target)
+        /// <summary>Modeli ekranın üst ~%60 bölgesinde gösterecek kamera.</summary>
+        private static void FrameCameraUpperViewport(Camera cam, GameObject target)
         {
             var renderers = target.GetComponentsInChildren<Renderer>();
             if (renderers.Length == 0)
             {
-                cam.transform.position = new Vector3(0f, 1f, -3f);
-                cam.transform.LookAt(new Vector3(0f, 0.8f, 0f));
+                cam.transform.position = new Vector3(0f, 1.2f, -2.2f);
+                cam.transform.LookAt(new Vector3(0f, 1.35f, 0.4f));
                 return;
             }
 
@@ -141,9 +161,10 @@ namespace LiverAR.EditorTools
             }
 
             var maxDim = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-            var dist = maxDim * 2.4f + 0.25f;
-            cam.transform.position = bounds.center + new Vector3(0f, maxDim * 0.25f, -dist);
-            cam.transform.LookAt(bounds.center);
+            var dist = maxDim * 1.35f + 0.25f;
+            var focus = bounds.center;
+            cam.transform.position = focus + new Vector3(0f, maxDim * 0.05f, -dist);
+            cam.transform.LookAt(focus);
             cam.nearClipPlane = Mathf.Max(0.01f, dist * 0.02f);
             cam.farClipPlane = Mathf.Max(100f, dist * 10f);
         }
@@ -287,6 +308,32 @@ namespace LiverAR.EditorTools
             }
 
             prop.objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetFieldBool(Object target, string field, bool value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(field);
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.boolValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetPropertyFloat(Object target, string property, float value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(property);
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.floatValue = value;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
     }

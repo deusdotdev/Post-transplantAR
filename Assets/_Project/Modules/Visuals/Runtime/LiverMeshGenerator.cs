@@ -49,6 +49,13 @@ namespace LiverAR.Modules.Visuals.Runtime
             }
         }
 
+        /// <summary>Editor prefab kurulumu için mesh'i hemen üretir.</summary>
+        public void EnsureMeshNow()
+        {
+            _meshFilter = null;
+            EnsureMesh();
+        }
+
         public Mesh BuildMesh()
         {
             var vertices = new List<Vector3>();

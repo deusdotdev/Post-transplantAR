@@ -105,6 +105,13 @@ namespace LiverAR.EditorTools
 
             var manipulator = interactionGo.AddComponent<ModelManipulator>();
             SetField(manipulator, "placementController", placement);
+            SetFieldBool(manipulator, "enableMouseDrag", true);
+            SetFieldBool(manipulator, "limitToUpperViewport", false);
+            SetFieldFloat(manipulator, "rotationSpeed", 0.95f);
+            SetFieldFloat(manipulator, "mouseRotationSpeed", 10f);
+            SetFieldBool(manipulator, "enableAutoRotate", true);
+            SetFieldFloat(manipulator, "autoRotateDegreesPerSecond", 22f);
+            SetFieldFloat(manipulator, "autoRotateResumeDelay", 0.45f);
 
             // --- UI (eğitim paneli + AR durum şeridi) ---
             var canvasGo = CreateCanvas();
@@ -114,6 +121,7 @@ namespace LiverAR.EditorTools
             EditorUtility.SetDirty(state);
 
             var ui = EducationUIBuilder.Build(canvasGo.transform, state, includeArStatusStrip: true);
+            EducationUIBuilder.BuildArPlacementPrompt(canvasGo.transform, ui.Flow, placement);
 
             // --- Koordinatör ---
             var coordinatorGo = new GameObject("AR Coordinator");
@@ -123,6 +131,7 @@ namespace LiverAR.EditorTools
             SetField(coordinator, "placementController", placement);
             SetField(coordinator, "setupGuide", ui.SetupGuide);
             SetField(coordinator, "educationFlow", ui.Flow);
+            SetFieldBool(ui.Flow, "deferMenuUntilModelPlaced", true);
 
             // --- EventSystem ---
             if (Object.FindObjectOfType<EventSystem>() == null)
@@ -175,28 +184,21 @@ namespace LiverAR.EditorTools
         private static GameObject CreateLiverPrefab()
         {
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(LiverPrefabPath);
-            if (existing != null)
+            if (existing != null && existing.GetComponentsInChildren<Renderer>(true).Length > 0)
             {
                 return existing;
             }
 
-            var temp = new GameObject("LiverModel");
-            // AR'da gerçek dünya ölçeği: ~15-20 cm.
-            temp.transform.localScale = Vector3.one * 0.15f;
-            temp.AddComponent<MeshFilter>();
-            var renderer = temp.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = CreateLiverMaterial();
-            temp.AddComponent<LiverMeshGenerator>();
+            if (existing != null)
+            {
+                Debug.LogWarning("[ARSceneBuilder] LiverModel.prefab mesh içermiyor; procedural prefab üretiliyor.");
+            }
 
-            var visual = temp.AddComponent<LiverVisualController>();
-            SetField(visual, "state", LoadOrCreateState());
-            SetField(visual, "liverRenderer", renderer);
-            SetField(visual, "liverTransform", temp.transform);
-
+            var temp = LiverProceduralPrefab.BuildWrapper(0.15f);
             EnsureFolder(Path.GetDirectoryName(LiverPrefabPath));
-            var prefab = PrefabUtility.SaveAsPrefabAsset(temp, LiverPrefabPath);
+            var saved = PrefabUtility.SaveAsPrefabAsset(temp, LiverPrefabPath);
             Object.DestroyImmediate(temp);
-            return prefab;
+            return saved;
         }
 
         private static Material CreateLiverMaterial()
@@ -257,6 +259,33 @@ namespace LiverAR.EditorTools
             }
 
             prop.objectReferenceValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetFieldBool(Object target, string field, bool value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(field);
+            if (prop == null)
+            {
+                Debug.LogWarning($"[ARSceneBuilder] '{field}' alanı bulunamadı: {target.GetType().Name}");
+                return;
+            }
+
+            prop.boolValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetFieldFloat(Object target, string field, float value)
+        {
+            var so = new SerializedObject(target);
+            var prop = so.FindProperty(field);
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.floatValue = value;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
     }

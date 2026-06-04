@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- iOS IL2CPP: Animation modülü NUnit referansı yüzünden build kırıyor; oyunda kullanılmıyor. -->
+<linker>
+  <assembly fullname="glTFast.Animation" preserve="nothing" ignoreIfMissing="1" />
+</linker>

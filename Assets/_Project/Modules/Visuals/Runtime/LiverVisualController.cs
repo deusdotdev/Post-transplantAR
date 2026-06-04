@@ -6,8 +6,6 @@ namespace LiverAR.Modules.Visuals.Runtime
     /// <summary>
     /// Simülasyon verisini karaciğer modelinin görseline yansıtır:
     /// büyüme -> ölçek, bilirubin -> sararma (icterus), bağışıklık saldırısı -> şişme.
-    /// Özel shader gerektirmez; renk + ölçek ile çalışır (built-in ve URP uyumlu).
-    /// MaterialPropertyBlock kullanır, böylece materyal kopyalanmaz.
     /// </summary>
     public sealed class LiverVisualController : MonoBehaviour
     {
@@ -15,21 +13,24 @@ namespace LiverAR.Modules.Visuals.Runtime
         [SerializeField] private Renderer liverRenderer;
         [SerializeField] private Transform liverTransform;
 
-        [Header("Ölçek (büyüme)")]
-        [SerializeField] private float minScale = 0.5f;
-        [SerializeField] private float maxScale = 1f;
-        [SerializeField] private float scaleLerpSpeed = 1.5f;
+        [Header("Ölçek (iyileşme senaryosu)")]
+        [SerializeField] private float minScale = 0.88f;
+        [SerializeField] private float maxScale = 1.08f;
+
+        [Header("Ölçek (ilaç senaryosu)")]
+        [SerializeField] private float medicationStableScale = 0.94f;
+        [SerializeField] private float medicationRiskScale = 1.14f;
+
+        [SerializeField] private float scaleLerpSpeed = 5f;
 
         [Header("Renk")]
         [SerializeField] private Color healthyColor = new Color(0.55f, 0.16f, 0.16f);
         [SerializeField] private Color jaundiceColor = new Color(0.85f, 0.78f, 0.2f);
-        [SerializeField] private Color fibrosisColor = new Color(0.32f, 0.22f, 0.18f);
-        [SerializeField] private Color steatosisColor = new Color(0.78f, 0.72f, 0.45f);
         [SerializeField] private float colorLerpSpeed = 2f;
 
-        [Header("Şişme (ödem)")]
-        [SerializeField] private float swellingAmount = 0.12f;
-        [SerializeField] private float swellingSpeed = 2.5f;
+        [Header("Şişme (red / ilaç atlama)")]
+        [SerializeField] private float swellingAmount = 0.2f;
+        [SerializeField] private float swellingSpeed = 3.5f;
 
         private static readonly int ColorId = Shader.PropertyToID("_Color");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
@@ -37,6 +38,10 @@ namespace LiverAR.Modules.Visuals.Runtime
         private MaterialPropertyBlock _propBlock;
         private Vector3 _baseScale = Vector3.one;
         private float _currentSwell;
+        private bool _useSimulationPalette;
+        private bool _lastImmuneAttack;
+        private bool _lastAdherent;
+        private ScenarioType _lastScenario;
 
         private void Awake()
         {
@@ -53,6 +58,11 @@ namespace LiverAR.Modules.Visuals.Runtime
             }
 
             _baseScale = liverTransform.localScale;
+            _useSimulationPalette = GetComponentInChildren<LiverMeshGenerator>(true) != null;
+            if (liverRenderer != null)
+            {
+                LiverRenderBootstrap.EnsureVisible(gameObject);
+            }
         }
 
         private void Update()
@@ -62,26 +72,71 @@ namespace LiverAR.Modules.Visuals.Runtime
                 return;
             }
 
+            DetectStateTransition();
             ApplyScale();
             ApplyColor();
         }
 
+        private void DetectStateTransition()
+        {
+            var immune = state.ImmuneAttack;
+            var adherent = state.IsAdherent;
+            var scenario = state.CurrentScenario;
+
+            if (immune == _lastImmuneAttack && adherent == _lastAdherent && scenario == _lastScenario)
+            {
+                return;
+            }
+
+            _lastImmuneAttack = immune;
+            _lastAdherent = adherent;
+            _lastScenario = scenario;
+
+            if (!immune)
+            {
+                _currentSwell = 0f;
+            }
+            else
+            {
+                _currentSwell = swellingAmount * 0.35f;
+            }
+        }
+
         private void ApplyScale()
         {
-            var growthScale = Mathf.Lerp(minScale, maxScale,
-                Mathf.InverseLerp(0.3f, 1f, state.GrowthPercentage));
+            var growthScale = ResolveGrowthScale();
 
             var targetSwell = state.ImmuneAttack ? swellingAmount : 0f;
             _currentSwell = Mathf.Lerp(_currentSwell, targetSwell, Time.deltaTime * swellingSpeed);
 
             var pulse = state.ImmuneAttack
-                ? Mathf.Sin(Time.time * swellingSpeed) * _currentSwell
+                ? Mathf.Sin(Time.time * swellingSpeed * 1.2f) * _currentSwell * 0.45f
                 : 0f;
 
             var factor = growthScale + _currentSwell + pulse;
             var target = _baseScale * factor;
             liverTransform.localScale = Vector3.Lerp(liverTransform.localScale, target,
                 Time.deltaTime * scaleLerpSpeed);
+        }
+
+        private float ResolveGrowthScale()
+        {
+            if (state.CurrentScenario == ScenarioType.Medication)
+            {
+                var healthFactor = Mathf.Clamp01(state.HealthPoints / 100f);
+                if (state.IsAdherent && !state.ImmuneAttack)
+                {
+                    return Mathf.Lerp(medicationRiskScale, medicationStableScale, healthFactor);
+                }
+
+                var riskT = 1f - healthFactor;
+                var growthT = Mathf.InverseLerp(0.82f, 1.15f, state.GrowthPercentage);
+                return Mathf.Lerp(medicationStableScale, medicationRiskScale,
+                    Mathf.Max(riskT, growthT * 0.85f));
+            }
+
+            return Mathf.Lerp(minScale, maxScale,
+                Mathf.InverseLerp(0.3f, 1f, state.GrowthPercentage));
         }
 
         private void ApplyColor()
@@ -92,22 +147,28 @@ namespace LiverAR.Modules.Visuals.Runtime
             }
 
             var jaundice = Mathf.InverseLerp(1.2f, 8f, state.Bilirubin);
-            var target = Color.Lerp(healthyColor, jaundiceColor, jaundice);
-
-            // Steatoz (yağlanma): yüzeyi soluk sarımsı bir tona kaydırır.
-            if (state.IsFattyDiet)
-            {
-                target = Color.Lerp(target, steatosisColor, 0.6f);
-            }
-
-            // Fibrozis: doku koyulaşır/kahverengileşir.
-            target = Color.Lerp(target, fibrosisColor, state.FibrosisFactor);
 
             liverRenderer.GetPropertyBlock(_propBlock);
-            var current = _propBlock.GetColor(BaseColorId);
-            if (current.a <= 0f)
+            Color target;
+            Color current;
+
+            if (_useSimulationPalette)
             {
-                current = healthyColor;
+                target = Color.Lerp(healthyColor, jaundiceColor, jaundice);
+                current = _propBlock.GetColor(BaseColorId);
+                if (current.a <= 0f)
+                {
+                    current = healthyColor;
+                }
+            }
+            else
+            {
+                target = Color.Lerp(Color.white, jaundiceColor, jaundice * 0.85f);
+                current = _propBlock.GetColor(BaseColorId);
+                if (current.a <= 0f)
+                {
+                    current = Color.white;
+                }
             }
 
             var next = Color.Lerp(current, target, Time.deltaTime * colorLerpSpeed);

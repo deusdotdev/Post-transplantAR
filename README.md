@@ -73,7 +73,7 @@ Assets/_Project/
   - `EducationFlowController`: güvenlik uyarısı → anatomi girişi → eğitim paneli
   - `ClinicalDashboard`: sağlık çubuğu, klinik değerler, uyarı bandı, red detay kutuları
   - `LiverAnatomyInfoPanel`: sağ/sol lob ve safra bilgi kartları (README bilgi noktaları)
-  - `ScenarioHUD`: dört senaryo ve aksiyon butonları
+  - `ScenarioHUD`: iki senaryo ve aksiyon butonları
 
 ## Çalışma Akışı
 
@@ -99,8 +99,6 @@ LiverTransplantAR örneğinden esinlenilen, veri-merkezli senaryo sistemi:
 Senaryolar:
 - **Onarım** — haftalık rejenerasyon (büyüme + klinik değerlerin normalleşmesi)
 - **İlaç Uyumu** — düzenli/aksatma dallanması (aksatınca bağışıklık saldırısı, sararma, şişme)
-- **Red / Rejeksiyon** — aşamalı süreç (erken → akut → kronik): damar tıkanıklığı, fibrozis, belirgin sararma
-- **Yaşam Tarzı** — sağlıklı beslenme/egzersiz vs. yağlı diyet (steatoz/yağlanma) karşılaştırması
 
 ## Editor Komutları (otomatik kurulum)
 
@@ -118,8 +116,8 @@ Her iki komut da gerektiğinde şu asset'leri otomatik üretir: `SimulationState
 1. **Procedural (varsayılan):** Karaciğer koddan üretilir (`LiverMeshGenerator`); dış dosya/lisans gerekmez.
 2. **Gerçek model (önerilen görünüm):** Sketchfab/NIH 3D'den CC lisanslı `.fbx` veya `.glb` indirilir.
    - İndirilen dosya `Assets/_Project/Models/` klasörüne bırakılır.
-   - `.glb` için `com.unity.cloud.gltfast` (6.12.0) paketi `manifest.json`'a eklidir (otomatik içe aktarır).
-   - Menüden **`Post-transplantAR > Import Liver Model (Models klasöründen)`** çalıştırılır.
+   - `.glb` için `com.unity.cloud.gltfast` (6.12.0) gerekir; paket yüklenince **`Post-transplantAR > Reimport Models Folder`** sonra **`Import Liver Model`** çalıştırılır.
+   - GLB import olmazsa menü **procedural** karaciğer prefab'ı oluşturur (AR yine çalışır). `.fbx` en sorunsuz seçenektir.
    - Araç modeli AR için ~18 cm'e ölçekler, `LiverVisualController` ile bağlar ve `Prefabs/LiverModel.prefab` olarak kaydeder.
    - Her iki sahne kurucusu (AR + Preview) prefab varsa otomatik onu kullanır.
    - CC Attribution lisansı için model sahibine künyede atıf verilmelidir.

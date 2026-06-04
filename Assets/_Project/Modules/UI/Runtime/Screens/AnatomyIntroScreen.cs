@@ -20,12 +20,11 @@ namespace LiverAR.Modules.UI.Runtime.Screens
 
         [TextArea]
         [SerializeField] private string introMessage =
-            "Karaciğerimizi Tanıyalım\n\n" +
-            "Karaciğer, vücudun en büyük iç organıdır; detoksifikasyon, protein sentezi ve " +
-            "safra üretimi gibi 500'den fazla görevi vardır.\n\n" +
-            "Bu uygulama, nakil sonrası onarım, ilaç uyumu, red riski ve yaşam tarzını " +
-            "AR üzerinde görsel olarak incelemeniz için hazırlanmıştır.\n\n" +
-            "Tanı koymaz — sorularınız için mutlaka transplant ekibinize danışın.";
+            "Karaciğerimizi tanıyalım\n\n" +
+            "Karaciğer; kanı temizleme, protein üretimi ve safra oluşturma gibi hayati işleri yapar.\n\n" +
+            "Bu uygulama, nakil sonrası iyileşme ve ilaç uyumunu 3B model üzerinde görmeniz için " +
+            "hazırlanmış bir eğitim aracıdır. Tanı veya tedavi önermez.\n\n" +
+            "Şikâyetiniz varsa her zaman transplant ekibinize danışın.";
 
         public event Action Continued;
 
