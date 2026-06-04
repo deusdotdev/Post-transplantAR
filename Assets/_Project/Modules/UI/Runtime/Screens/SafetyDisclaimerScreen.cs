@@ -9,6 +9,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
     /// RAMS - Safety: kullanıcının uygulamayı tanı aracı sanmasını önlemek için
     /// açık uyarı ve onay gerektirir.
     /// </summary>
+    [DefaultExecutionOrder(50)]
     public sealed class SafetyDisclaimerScreen : MonoBehaviour
     {
         private const string AcknowledgedKey = "safety_disclaimer_acknowledged";

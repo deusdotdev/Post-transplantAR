@@ -38,6 +38,19 @@ namespace LiverAR.Modules.Simulation.Runtime
             RaiseChanged();
         }
 
+        /// <summary>Ana menüye dönüldüğünde senaryo durumunu kapatır.</summary>
+        public void ExitScenario()
+        {
+            if (state == null)
+            {
+                return;
+            }
+
+            state.CurrentScenario = ScenarioType.None;
+            RestartDeclineRoutine();
+            RaiseChanged();
+        }
+
         public void AdvanceWeek()
         {
             if (state == null || state.CurrentScenario == ScenarioType.None)
@@ -53,6 +66,11 @@ namespace LiverAR.Modules.Simulation.Runtime
         public void SetMedicationAdherence(bool adherent)
         {
             if (state == null)
+            {
+                return;
+            }
+
+            if (state.IsAdherent == adherent)
             {
                 return;
             }
@@ -184,6 +202,39 @@ namespace LiverAR.Modules.Simulation.Runtime
                     return "Akut rejeksiyon: belirgin sararma (icterus), damar tıkanıklığı ve doku şişmesi görülür.";
                 default:
                     return "Kronik rejeksiyon: fibrozis ve kalıcı damar hasarı; organ fonksiyonu ciddi düşer.";
+            }
+        }
+
+        public void GetRejectionPanels(out string symptom, out string clinical, out string action)
+        {
+            if (state == null || state.CurrentScenario != ScenarioType.Rejection)
+            {
+                symptom = clinical = action = string.Empty;
+                return;
+            }
+
+            switch (state.RejectionStage)
+            {
+                case 0:
+                    symptom = "Semptom: Genelde belirgin değil; takip önemli.";
+                    clinical = "Klinik: AST/ALT hafif yükselebilir.";
+                    action = "Eylem: İlaç uyumunu sürdürün; ekibinizle planlı kontrol.";
+                    break;
+                case 1:
+                    symptom = "Semptom: Halsizlik, hafif ateş, karında dolgunluk hissi.";
+                    clinical = "Klinik: AST/ALT artışı, hafif bilirubin yükselmesi.";
+                    action = "Eylem: Nakil ekibinize aynı gün bilgi verin.";
+                    break;
+                case 2:
+                    symptom = "Semptom: Sararma (cilt/göz), koyu idrar, karında şişlik.";
+                    clinical = "Klinik: Belirgin bilirubin, damar tıkanıklığı bulguları.";
+                    action = "Eylem: Acil değerlendirme gerekebilir — hemen arayın.";
+                    break;
+                default:
+                    symptom = "Semptom: Kalıcı yorgunluk, sıvı tutulumu, tekrarlayan sarılık.";
+                    clinical = "Klinik: Fibrozis, düşük organ sağlığı, kronik hasar.";
+                    action = "Eylem: Uzun dönem transplant takibi şart; tedavi planı ekiple.";
+                    break;
             }
         }
 

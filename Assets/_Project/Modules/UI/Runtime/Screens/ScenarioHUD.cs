@@ -17,6 +17,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         [SerializeField] private Text headerText;
         [SerializeField] private Text descriptionText;
         [SerializeField] private Text clinicalText;
+        [SerializeField] private ClinicalDashboard clinicalDashboard;
 
         private void OnEnable()
         {
@@ -105,8 +106,17 @@ namespace LiverAR.Modules.UI.Runtime.Screens
                 descriptionText.text = controller.GetDescription();
             }
 
-            if (clinicalText != null)
+            if (clinicalDashboard != null)
             {
+                clinicalDashboard.Refresh();
+                if (clinicalText != null)
+                {
+                    clinicalText.gameObject.SetActive(false);
+                }
+            }
+            else if (clinicalText != null)
+            {
+                clinicalText.gameObject.SetActive(true);
                 clinicalText.text = BuildClinicalText(controller.State);
             }
         }

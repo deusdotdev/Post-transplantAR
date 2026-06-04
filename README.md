@@ -37,10 +37,21 @@ Assets/_Project/
     │   └── Runtime/Input/
     │       ├── TapToPlaceInput.cs
     │       └── ModelManipulator.cs
+    ├── Simulation/
+    │   └── Runtime/ (SimulationState, SimulationController)
+    ├── Visuals/
+    │   └── Runtime/ (LiverVisualController, LiverMeshGenerator)
     └── UI/
-        └── Runtime/Screens/
-            ├── ARSetupGuide.cs
-            └── SafetyDisclaimerScreen.cs
+        └── Runtime/
+            ├── Theme/UITheme.cs
+            └── Screens/
+                ├── ARSetupGuide.cs
+                ├── SafetyDisclaimerScreen.cs
+                ├── AnatomyIntroScreen.cs
+                ├── EducationFlowController.cs
+                ├── ClinicalDashboard.cs
+                ├── ScenarioHUD.cs
+                └── LiverAnatomyInfoPanel.cs
 ```
 
 ## Modül Sorumlulukları
@@ -58,16 +69,22 @@ Assets/_Project/
 - `Bootstrap`:
   - `SceneBootstrap`: kare hızı, vSync ve ekran uyuma ayarları
   - `ARExperienceCoordinator`: modülleri birbirine bağlayan merkezi akış (Maintainability)
+- `Simulation` / `Visuals` / `UI`:
+  - `EducationFlowController`: güvenlik uyarısı → anatomi girişi → eğitim paneli
+  - `ClinicalDashboard`: sağlık çubuğu, klinik değerler, uyarı bandı, red detay kutuları
+  - `LiverAnatomyInfoPanel`: sağ/sol lob ve safra bilgi kartları (README bilgi noktaları)
+  - `ScenarioHUD`: dört senaryo ve aksiyon butonları
 
 ## Çalışma Akışı
 
-1. `SafetyDisclaimerScreen` ilk açılışta güvenlik uyarısını gösterir ve onay ister.
-2. `ARSessionController` cihaz uyumluluğunu kontrol eder; desteklenmiyorsa bilgilendirici fallback gösterilir.
-3. `PlaneDetectionMonitor` düz bir yüzey bulunca yerleştirmeyi etkinleştirir.
-4. Kullanıcı ekrana dokunur → `TapToPlaceInput` → `ARPlacementController` modeli yerleştirir.
-5. `ModelManipulator` ile model döndürülüp ölçeklenebilir.
-6. `ARSetupGuide` her adımda uygun yönlendirme metnini gösterir.
-7. `ARExperienceCoordinator` tüm bu olayları koordine eder.
+1. `SafetyDisclaimerScreen` güvenlik uyarısını gösterir (RAMS Safety).
+2. `AnatomyIntroScreen` karaciğer işlevlerine kısa giriş sunar.
+3. `ARSessionController` cihaz uyumluluğunu kontrol eder.
+4. `PlaneDetectionMonitor` düz yüzey bulunca yerleştirmeyi açar.
+5. Kullanıcı dokunur → model AR'de yerleşir; `LiverVisualController` senaryo verisine göre görünümü günceller.
+6. `EducationMenuController`: **ana menü → senaryo ekranı** (referans FlowManager gibi tek panel aktif); anatomi ayrı alt menü.
+7. Senaryo ekranında yalnızca o senaryoya ait aksiyonlar + klinik dashboard + «Ana menü».
+8. `ModelManipulator` ile döndürme/ölçekleme; `ARSetupGuide` üst durum şeridi.
 
 ## Simülasyon ve Görsel Katman (Senaryo Sistemi)
 

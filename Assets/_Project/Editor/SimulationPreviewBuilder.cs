@@ -60,62 +60,24 @@ namespace LiverAR.EditorTools
 
             // --- Karaciğer: indirilen model prefab'ı varsa onu, yoksa procedural mesh'i kullan ---
             var liver = CreateLiver(state);
+            liver.transform.position = new Vector3(0f, 1.05f, 0.35f);
             FrameCamera(cam, liver);
 
-            // --- Simülasyon kontrolcüsü ---
-            var simGo = new GameObject("Simulation");
-            var controller = simGo.AddComponent<SimulationController>();
-            SetField(controller, "state", state);
-
-            // --- UI ---
+            // --- UI (zengin eğitim paneli; önizlemede tam ekran) ---
             var canvasGo = CreateCanvas();
-            var header = CreateText(canvasGo.transform, "HeaderText",
-                new Vector2(0f, 1f), new Vector2(0f, -80f), TextAnchor.UpperCenter, 40, "Senaryo Seçimi");
-            var desc = CreateText(canvasGo.transform, "DescriptionText",
-                new Vector2(0f, 1f), new Vector2(0f, -180f), TextAnchor.UpperCenter, 26,
-                "İncelemek istediğiniz nakil sonrası senaryoyu seçin.");
-            desc.rectTransform.sizeDelta = new Vector2(-120f, 220f);
-            var clinical = CreateText(canvasGo.transform, "ClinicalText",
-                new Vector2(0f, 0.5f), new Vector2(-300f, 0f), TextAnchor.MiddleLeft, 24, "");
-
-            var hud = canvasGo.AddComponent<ScenarioHUD>();
-            SetField(hud, "controller", controller);
-            SetField(hud, "headerText", header);
-            SetField(hud, "descriptionText", desc);
-            SetField(hud, "clinicalText", clinical);
-
-            // --- Butonlar ---
-            // Kalıcı (serialize edilen) onClick dinleyicileri için doğrudan metot
-            // referansı verilmeli; lambda serialize olmaz.
-            // Senaryo seçimi (2x2):
-            CreateButton(canvasGo.transform, "BtnRecovery", "Onarım",
-                new Vector2(-140f, 520f), hud.OnRecoverySelected);
-            CreateButton(canvasGo.transform, "BtnMedication", "İlaç Uyumu",
-                new Vector2(140f, 520f), hud.OnMedicationSelected);
-            CreateButton(canvasGo.transform, "BtnRejection", "Red / Rejeksiyon",
-                new Vector2(-140f, 400f), hud.OnRejectionSelected);
-            CreateButton(canvasGo.transform, "BtnLifestyle", "Yaşam Tarzı",
-                new Vector2(140f, 400f), hud.OnLifestyleSelected);
-
-            // Senaryo aksiyonları (2x3):
-            CreateButton(canvasGo.transform, "BtnNextWeek", "Sonraki Hafta",
-                new Vector2(-280f, 200f), hud.OnNextWeek);
-            CreateButton(canvasGo.transform, "BtnTakeMed", "İlacı Al",
-                new Vector2(0f, 200f), hud.OnTakeMedication);
-            CreateButton(canvasGo.transform, "BtnSkipMed", "İlacı Atla",
-                new Vector2(280f, 200f), hud.OnSkipMedication);
-            CreateButton(canvasGo.transform, "BtnAdvanceRejection", "Reddi İlerlet",
-                new Vector2(-280f, 80f), hud.OnAdvanceRejection);
-            CreateButton(canvasGo.transform, "BtnHealthy", "Sağlıklı",
-                new Vector2(0f, 80f), hud.OnHealthyLifestyle);
-            CreateButton(canvasGo.transform, "BtnFatty", "Yağlı Diyet",
-                new Vector2(280f, 80f), hud.OnFattyDiet);
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.05f, 0.07f, 0.1f);
+            EducationUIBuilder.Build(canvasGo.transform, state, includeArStatusStrip: false,
+                compactBottomSheet: false);
 
             EnsureEventSystem();
 
             SaveScene(scene);
-            Debug.Log("[SimulationPreviewBuilder] Önizleme sahnesi kuruldu: " + ScenePath +
-                      " | Play'e basıp senaryo butonlarını dene. Küre büyür, ilaç atlanınca sararır/şişer.");
+            EditorUtility.DisplayDialog("Önizleme sahnesi yenilendi",
+                "Yeni koyu tema UI kuruldu.\n\nPlay'e basmadan önce ▶ kapalı olsun.\n" +
+                "Eski mavi düğmeli görünüm = bu komutu çalıştırmadan kalmış sahnedir.",
+                "Tamam");
+            Debug.Log("[SimulationPreviewBuilder] Önizleme sahnesi kuruldu: " + ScenePath);
         }
 
         private static SimulationState LoadOrCreateState()

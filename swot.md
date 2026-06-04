@@ -4,7 +4,7 @@
 - AR destekli eğitim ile hastanın ameliyat sonrası süreci daha iyi anlaması.
 - Modüler Unity mimarisi sayesinde AR, UI, sağlık mantığı ve veri katmanlarının ayrı geliştirilebilmesi.
 - Hasta dostu ve sade UX ile teknik bilgisi düşük kullanıcıların da uygulamayı rahat kullanabilmesi.
-- Günlük checklist ve ilaç takibi ile tedaviye uyumun artma potansiyeli.
+- İlaç uyumu senaryosunda günlük hatırlatıcı (toggle) ile tedaviye uyumun desteklenmesi.
 - Cihaz üzerinde çalışabilen yerel veri yapısı ile hızlı ve kesintisiz kullanım.
 
 ## Weaknesses (Zayıf Yönler)

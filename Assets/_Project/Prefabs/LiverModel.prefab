@@ -53,6 +53,8 @@ MonoBehaviour:
   scaleLerpSpeed: 1.5
   healthyColor: {r: 0.55, g: 0.16, b: 0.16, a: 1}
   jaundiceColor: {r: 0.85, g: 0.78, b: 0.2, a: 1}
+  fibrosisColor: {r: 0.32, g: 0.22, b: 0.18, a: 1}
+  steatosisColor: {r: 0.78, g: 0.72, b: 0.45, a: 1}
   colorLerpSpeed: 2
   swellingAmount: 0.12
   swellingSpeed: 2.5

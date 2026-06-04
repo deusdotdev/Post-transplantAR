@@ -34,7 +34,7 @@ namespace LiverAR.EditorTools
                 EditorUtility.DisplayDialog("Model bulunamadı",
                     $"İndirdiğin modeli (.fbx / .glb / .obj) şu klasöre bırak:\n\n{ModelsFolder}\n\n" +
                     "Sonra bu menüyü tekrar çalıştır.\n\n" +
-                    "Not: .glb kullanıyorsan glTFast paketi gerekir (manifest'e eklendi).", "Tamam");
+                    "Not: iOS build icin .fbx tercih et; .glb icin Blender'dan FBX export da olur.", "Tamam");
                 return;
             }
 

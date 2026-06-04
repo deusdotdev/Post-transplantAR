@@ -3,7 +3,7 @@ using System.IO;
 using LiverAR.Bootstrap;
 using LiverAR.Modules.AR.Runtime.Controllers;
 using LiverAR.Modules.Interaction.Runtime.Input;
-using LiverAR.Modules.UI.Runtime.Screens;
+using LiverAR.Modules.Simulation.Runtime.Data;
 using LiverAR.Modules.Visuals.Runtime;
 using Unity.XR.CoreUtils;
 using UnityEditor;
@@ -106,21 +106,14 @@ namespace LiverAR.EditorTools
             var manipulator = interactionGo.AddComponent<ModelManipulator>();
             SetField(manipulator, "placementController", placement);
 
-            // --- UI ---
+            // --- UI (eğitim paneli + AR durum şeridi) ---
             var canvasGo = CreateCanvas();
-            var setupGuide = canvasGo.AddComponent<ARSetupGuide>();
+            var state = LoadOrCreateState();
+            state.ResetToDefault();
+            state.CurrentScenario = ScenarioType.None;
+            EditorUtility.SetDirty(state);
 
-            var statusText = CreateText(canvasGo.transform, "StatusText",
-                new Vector2(0f, 1f), new Vector2(0f, -120f), TextAnchor.UpperCenter, 28,
-                "Cihaz uyumluluğu kontrol ediliyor...");
-            var safetyText = CreateText(canvasGo.transform, "SafetyText",
-                new Vector2(0f, 0f), new Vector2(0f, 70f), TextAnchor.LowerCenter, 22,
-                "Bu uygulama tanı koymaz; yalnızca eğitim amaçlıdır.");
-            SetField(setupGuide, "statusText", statusText);
-            SetField(setupGuide, "safetyText", safetyText);
-
-            // --- Güvenlik uyarı ekranı ---
-            var disclaimer = BuildDisclaimer(canvasGo.transform);
+            var ui = EducationUIBuilder.Build(canvasGo.transform, state, includeArStatusStrip: true);
 
             // --- Koordinatör ---
             var coordinatorGo = new GameObject("AR Coordinator");
@@ -128,8 +121,8 @@ namespace LiverAR.EditorTools
             SetField(coordinator, "sessionController", sessionController);
             SetField(coordinator, "planeMonitor", planeMonitor);
             SetField(coordinator, "placementController", placement);
-            SetField(coordinator, "setupGuide", setupGuide);
-            SetField(coordinator, "disclaimerScreen", disclaimer);
+            SetField(coordinator, "setupGuide", ui.SetupGuide);
+            SetField(coordinator, "educationFlow", ui.Flow);
 
             // --- EventSystem ---
             if (Object.FindObjectOfType<EventSystem>() == null)
@@ -140,8 +133,10 @@ namespace LiverAR.EditorTools
             }
 
             SaveScene(scene);
-            Debug.Log("[ARSceneBuilder] Sahne kuruldu: " + ScenePath +
-                      " | Karaciğer prefab'ını AR Interaction > ARPlacementController > Liver Prefab alanına bağlamayı unutma.");
+            EditorUtility.DisplayDialog("AR sahnesi yenilendi",
+                "Yeni eğitim arayüzü ARMain'e yazıldı.\nTelefona yüklemeden önce buradan build al.",
+                "Tamam");
+            Debug.Log("[ARSceneBuilder] Sahne kuruldu: " + ScenePath);
         }
 
         private static GameObject CreateCanvas()
@@ -155,83 +150,6 @@ namespace LiverAR.EditorTools
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
             return canvasGo;
-        }
-
-        private static Text CreateText(Transform parent, string name, Vector2 anchor,
-            Vector2 anchoredPos, TextAnchor align, int fontSize, string content)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = anchor;
-            rt.anchorMax = new Vector2(1f - anchor.x, anchor.y);
-            rt.pivot = new Vector2(0.5f, anchor.y);
-            rt.sizeDelta = new Vector2(-80f, 200f);
-            rt.anchoredPosition = anchoredPos;
-
-            var text = go.AddComponent<Text>();
-            text.font = GetDefaultFont();
-            text.fontSize = fontSize;
-            text.alignment = align;
-            text.color = Color.white;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.text = content;
-            return text;
-        }
-
-        private static SafetyDisclaimerScreen BuildDisclaimer(Transform canvas)
-        {
-            var panel = new GameObject("SafetyDisclaimerPanel");
-            panel.transform.SetParent(canvas, false);
-            var panelRt = panel.AddComponent<RectTransform>();
-            panelRt.anchorMin = Vector2.zero;
-            panelRt.anchorMax = Vector2.one;
-            panelRt.offsetMin = Vector2.zero;
-            panelRt.offsetMax = Vector2.zero;
-            var bg = panel.AddComponent<Image>();
-            bg.color = new Color(0f, 0f, 0f, 0.9f);
-
-            var msg = CreateText(panel.transform, "DisclaimerText",
-                new Vector2(0f, 0.5f), new Vector2(0f, 120f), TextAnchor.MiddleCenter, 30, "");
-            msg.rectTransform.sizeDelta = new Vector2(-120f, 900f);
-
-            var buttonGo = new GameObject("AcknowledgeButton");
-            buttonGo.transform.SetParent(panel.transform, false);
-            var btnRt = buttonGo.AddComponent<RectTransform>();
-            btnRt.anchorMin = new Vector2(0.5f, 0f);
-            btnRt.anchorMax = new Vector2(0.5f, 0f);
-            btnRt.pivot = new Vector2(0.5f, 0f);
-            btnRt.sizeDelta = new Vector2(500f, 130f);
-            btnRt.anchoredPosition = new Vector2(0f, 200f);
-            var btnImg = buttonGo.AddComponent<Image>();
-            btnImg.color = new Color(0.16f, 0.5f, 0.86f, 1f);
-            var button = buttonGo.AddComponent<Button>();
-
-            var btnLabel = CreateText(buttonGo.transform, "Label",
-                Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter, 30, "Anladım, Devam Et");
-            btnLabel.rectTransform.anchorMin = Vector2.zero;
-            btnLabel.rectTransform.anchorMax = Vector2.one;
-            btnLabel.rectTransform.offsetMin = Vector2.zero;
-            btnLabel.rectTransform.offsetMax = Vector2.zero;
-
-            var disclaimer = panel.AddComponent<SafetyDisclaimerScreen>();
-            SetField(disclaimer, "panelRoot", panel);
-            SetField(disclaimer, "messageText", msg);
-            SetField(disclaimer, "acknowledgeButton", button);
-            return disclaimer;
-        }
-
-        private static Font GetDefaultFont()
-        {
-            // Unity 2022: yerleşik legacy font.
-            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null)
-            {
-                font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            }
-            return font;
         }
 
         private static void SaveScene(Scene scene)

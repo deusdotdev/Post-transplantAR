@@ -18,9 +18,9 @@ namespace LiverAR.Bootstrap
 
         [Header("UI")]
         [SerializeField] private ARSetupGuide setupGuide;
-        [SerializeField] private SafetyDisclaimerScreen disclaimerScreen;
+        [SerializeField] private EducationFlowController educationFlow;
 
-        private bool _disclaimerAccepted;
+        private bool _educationFlowComplete;
 
         private void OnEnable()
         {
@@ -39,9 +39,9 @@ namespace LiverAR.Bootstrap
                 placementController.ModelPlaced += OnModelPlaced;
             }
 
-            if (disclaimerScreen != null)
+            if (educationFlow != null)
             {
-                disclaimerScreen.Acknowledged += OnDisclaimerAcknowledged;
+                educationFlow.FlowComplete += OnEducationFlowComplete;
             }
         }
 
@@ -62,9 +62,9 @@ namespace LiverAR.Bootstrap
                 placementController.ModelPlaced -= OnModelPlaced;
             }
 
-            if (disclaimerScreen != null)
+            if (educationFlow != null)
             {
-                disclaimerScreen.Acknowledged -= OnDisclaimerAcknowledged;
+                educationFlow.FlowComplete -= OnEducationFlowComplete;
             }
         }
 
@@ -74,13 +74,21 @@ namespace LiverAR.Bootstrap
             {
                 setupGuide.ShowState(ARSetupGuide.GuideState.CheckingDevice);
             }
+
+            if (educationFlow != null && educationFlow.IsFlowComplete)
+            {
+                _educationFlowComplete = true;
+            }
         }
 
-        private void OnDisclaimerAcknowledged()
+        private void OnEducationFlowComplete()
         {
-            _disclaimerAccepted = true;
+            _educationFlowComplete = true;
+            RefreshPlacementGate();
+        }
 
-            // Uyarı, düzlem bulunduktan sonra onaylanmış olabilir; durumu yeniden değerlendir.
+        private void RefreshPlacementGate()
+        {
             if (planeMonitor != null)
             {
                 OnPlaneAvailabilityChanged(planeMonitor.HasUsablePlane);
@@ -117,7 +125,7 @@ namespace LiverAR.Bootstrap
         {
             if (placementController != null)
             {
-                placementController.SetPlacementEnabled(hasPlane && _disclaimerAccepted);
+                placementController.SetPlacementEnabled(hasPlane && _educationFlowComplete);
             }
 
             if (setupGuide == null || placementController == null || placementController.HasModel)
@@ -135,6 +143,11 @@ namespace LiverAR.Bootstrap
             if (setupGuide != null)
             {
                 setupGuide.ShowState(ARSetupGuide.GuideState.ModelPlaced);
+            }
+
+            if (educationFlow != null)
+            {
+                educationFlow.SetEducationPanelVisible(true);
             }
         }
     }
