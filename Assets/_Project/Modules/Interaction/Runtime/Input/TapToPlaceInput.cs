@@ -10,12 +10,14 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
         private void Update()
         {
             // Sadece tek parmak dokunuşunda yerleştir; iki parmak jesti ölçekleme içindir.
-            if (placementController == null || Input.touchCount != 1)
+            // UnityEngine.Input tam yol: namespace'imiz "...Runtime.Input" ile bittiği için
+            // çıplak "Input" yanlış çözümlenir.
+            if (placementController == null || UnityEngine.Input.touchCount != 1)
             {
                 return;
             }
 
-            var touch = Input.GetTouch(0);
+            var touch = UnityEngine.Input.GetTouch(0);
             if (touch.phase != TouchPhase.Began)
             {
                 return;

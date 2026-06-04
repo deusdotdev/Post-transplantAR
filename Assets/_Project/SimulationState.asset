@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1d98cd5c2a4450eb5818bb8a11896a, type: 3}
+  m_Name: SimulationState
+  m_EditorClassIdentifier: 
+  CurrentScenario: 0
+  SimulationWeek: 1
+  GrowthPercentage: 0.3
+  IsAdherent: 1
+  ImmuneAttack: 0
+  HealthPoints: 100
+  AST: 25
+  ALT: 30
+  Bilirubin: 0.8

@@ -69,6 +69,40 @@ Assets/_Project/
 6. `ARSetupGuide` her adımda uygun yönlendirme metnini gösterir.
 7. `ARExperienceCoordinator` tüm bu olayları koordine eder.
 
+## Simülasyon ve Görsel Katman (Senaryo Sistemi)
+
+LiverTransplantAR örneğinden esinlenilen, veri-merkezli senaryo sistemi:
+
+- `Modules/Simulation/Runtime/Data/SimulationState.cs` — `ScriptableObject` tek doğruluk kaynağı (büyüme, sağlık, AST/ALT/Bilirubin, ilaç uyumu)
+- `Modules/Simulation/Runtime/SimulationController.cs` — senaryo mantığı; **event-driven** (`StateChanged`), her frame string üretmez
+- `Modules/Visuals/Runtime/LiverVisualController.cs` — veriyi görsele bağlar (büyüme→ölçek, bilirubin→sararma, bağışıklık→şişme). `MaterialPropertyBlock` kullanır, özel shader gerektirmez
+- `Modules/Visuals/Runtime/LiverMeshGenerator.cs` — karaciğeri **koddan üretir** (iki loblu); dış 3B model/lisans gerektirmez
+- `Modules/UI/Runtime/Screens/ScenarioHUD.cs` — başlık/açıklama/klinik metin + buton aksiyonları
+
+Senaryolar: **Onarım** (haftalık rejenerasyon) ve **İlaç Uyumu** (düzenli/aksatma dallanması).
+
+## Editor Komutları (otomatik kurulum)
+
+Üst menü `Post-transplantAR`:
+
+- **Build AR Scene** — gerçek AR sahnesi (telefonda test için)
+- **Build Simulation Preview (No AR)** — AR olmadan, Editor'de Play ile test edilebilen senaryo önizlemesi (procedural karaciğer + butonlu HUD). Telefon gerekmez.
+
+Her iki komut da gerektiğinde şu asset'leri otomatik üretir: `SimulationState.asset`, `Materials/LiverMaterial.mat`, `Prefabs/LiverModel.prefab`.
+
+## 3B Model
+
+İki seçenek desteklenir:
+
+1. **Procedural (varsayılan):** Karaciğer koddan üretilir (`LiverMeshGenerator`); dış dosya/lisans gerekmez.
+2. **Gerçek model (önerilen görünüm):** Sketchfab/NIH 3D'den CC lisanslı `.fbx` veya `.glb` indirilir.
+   - İndirilen dosya `Assets/_Project/Models/` klasörüne bırakılır.
+   - `.glb` için `com.unity.cloud.gltfast` (6.12.0) paketi `manifest.json`'a eklidir (otomatik içe aktarır).
+   - Menüden **`Post-transplantAR > Import Liver Model (Models klasöründen)`** çalıştırılır.
+   - Araç modeli AR için ~18 cm'e ölçekler, `LiverVisualController` ile bağlar ve `Prefabs/LiverModel.prefab` olarak kaydeder.
+   - Her iki sahne kurucusu (AR + Preview) prefab varsa otomatik onu kullanır.
+   - CC Attribution lisansı için model sahibine künyede atıf verilmelidir.
+
 ## Sahne Kurulumu (Inspector Bağlantıları)
 
 Tek sahnede şu GameObject'leri kurup script'leri bağlayın:
@@ -89,6 +123,12 @@ Kısa özet:
 - XR Plug-in Management içinde Android için ARCore, iOS için ARKit aç
 - Sahneye `AR Session` ve `XR Origin (AR)` ekle
 - `AR Plane Manager` ve `AR Raycast Manager` bileşenlerini bağla
+
+## Credits (Model Atıfları)
+
+- Karaciğer 3B modeli (`Assets/_Project/Models/humans_liver.glb`): "Human's Liver", Sketchfab üzerinden CC Attribution lisansıyla. Kullanılan modelin sahibine ve lisansına bağlı kalınmalıdır.
+
+> Not: Farklı bir model kullanılırsa bu bölüm güncellenmeli; CC Attribution gereği model sahibinin adı ve kaynak bağlantısı eklenmelidir.
 
 ## Not
 
