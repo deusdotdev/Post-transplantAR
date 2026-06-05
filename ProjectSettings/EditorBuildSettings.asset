@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Project/Scenes/EducationHub.unity
+    guid: 98da0b68e3c0d4452bd2ca18def16d11
+  - enabled: 1
     path: Assets/_Project/Scenes/ARMain.unity
     guid: cdc1480bedc504952a80d8e444436f40
   m_configObjects:

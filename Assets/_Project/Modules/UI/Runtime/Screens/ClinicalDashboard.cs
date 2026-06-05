@@ -87,7 +87,15 @@ namespace LiverAR.Modules.UI.Runtime.Screens
 
         private void SetPanelActive(bool active)
         {
-            gameObject.SetActive(active);
+            if (gameObject.activeSelf != active)
+            {
+                gameObject.SetActive(active);
+            }
+
+            if (active)
+            {
+                UiLayer.BringToFront(gameObject);
+            }
         }
 
         private void UpdateHealth(SimulationState state)

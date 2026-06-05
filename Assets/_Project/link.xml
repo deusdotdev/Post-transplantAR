@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- iOS IL2CPP: Animation modülü NUnit referansı yüzünden build kırıyor; oyunda kullanılmıyor. -->
+<!-- iOS: runtime'da glTFast kullanılmıyor (GLB Editor'de prefab'a dönüşüyor); strip et. -->
 <linker>
+  <assembly fullname="glTFast" preserve="nothing" ignoreIfMissing="1" />
   <assembly fullname="glTFast.Animation" preserve="nothing" ignoreIfMissing="1" />
+  <assembly fullname="glTFast.Documentation.Examples" preserve="nothing" ignoreIfMissing="1" />
+  <assembly fullname="glTFast.Export" preserve="nothing" ignoreIfMissing="1" />
+  <assembly fullname="glTFast.dots" preserve="nothing" ignoreIfMissing="1" />
+  <assembly fullname="glTFast.Newtonsoft" preserve="nothing" ignoreIfMissing="1" />
 </linker>

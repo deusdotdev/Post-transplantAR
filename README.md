@@ -1,15 +1,28 @@
 # Post-transplantAR - Karaciğer Nakli Sonrası AR Eğitim Uygulaması
 
-Bu proje, karaciğer nakli sonrası hastaya yalnızca AR destekli görsel eğitim sunmak için tasarlanmıştır.
+Karaciğer nakli olmuş hastanın kendi sürecini tanıması için tasarlanmış, kart bazlı bir eğitim uygulaması. AR isteğe bağlıdır ve yalnızca ilgili karttan açılır.
 
 ## Proje Amacı
 
-- Hastaya AR ile karaciğer anatomisini ve ameliyat sonrası süreci anlatıp hastayı bilgilendirmek amaçlanmaktadır. Hasta karaciğer resmine tıkladığında karaciğer hakkında detayları veren AR uygulaması geliştirilecektir.
+- Hastanın "nakil sonrası vücudumda/karaciğerimde ne değişiyor?" sorusuna rehberli bir yolculukla yanıt vermek.
+- İlaçların karaciğerin hangi bölgesine etki ettiğini AR'da oklar ve etiketlerle göstermek.
+- Nakil sonrası beslenme için yapılması/kaçınılması gerekenleri sade biçimde sunmak.
+- Tüm içerik eğitim amaçlıdır; tanı koymaz, kişisel kararlar için transplant ekibine danışılmalıdır.
+
+## Ana ekran (kart bazlı)
+
+Uygulama doğrudan kameraya girmez; bir ana ekranla açılır:
+
+1. **Nakil sonrası yolculuğum** (AR'sız) — 0. gün → 1. hafta → 1. ay → 3. ay → uzun dönem zaman çizelgesi; her adımda karaciğer görseli + klinik değerler + hasta dostu anlatım.
+2. **İlaçlarım nereye etki ediyor? (AR)** — model yerleştirilir, ilaç seçilince ilgili bölgeden ok + etiket çıkar ve bölge parlar.
+3. **Beslenme önerilerim** (AR'sız) — gruplanmış, renk kodlu (yap/kaçın) liste.
+4. **Karaciğeri keşfet (AR)** — bölgeleri AR'da yakından inceleme.
 
 ## Kapsam
 
-- Tek odak: AR eğitim deneyimi
-- Model yerleştirme, döndürme, ölçekleme ve bilgi noktaları
+- Kart bazlı ana ekran (`EducationHub` sahnesi, giriş sahnesi)
+- AR yalnızca 2. ve 4. karttan açılır (`ARMain` sahnesi)
+- Bölge çapaları + ok/etiket görselleştirmesi (tek mesh üzerinde, alt-mesh ayrımı gerektirmez)
 - Android (ARCore) ve iOS (ARKit) desteği
 
 ## Teknoloji Yığını
@@ -77,14 +90,18 @@ Assets/_Project/
 
 ## Çalışma Akışı
 
-1. `SafetyDisclaimerScreen` güvenlik uyarısını gösterir (RAMS Safety).
-2. `AnatomyIntroScreen` karaciğer işlevlerine kısa giriş sunar.
-3. `ARSessionController` cihaz uyumluluğunu kontrol eder.
-4. `PlaneDetectionMonitor` düz yüzey bulunca yerleştirmeyi açar.
-5. Kullanıcı dokunur → model AR'de yerleşir; `LiverVisualController` senaryo verisine göre görünümü günceller.
-6. `EducationMenuController`: **ana menü → senaryo ekranı** (referans FlowManager gibi tek panel aktif); anatomi ayrı alt menü.
-7. Senaryo ekranında yalnızca o senaryoya ait aksiyonlar + klinik dashboard + «Ana menü».
-8. `ModelManipulator` ile döndürme/ölçekleme; `ARSetupGuide` üst durum şeridi.
+Ana ekran (`HomeHubController`):
+1. Uygulama `EducationHub` sahnesiyle açılır; 4 kart gösterilir.
+2. **Yolculuk** kartı: `RecoveryJourneyController` adım adım `SimulationState`'i günceller; `LiverVisualController` görseli (sararma/şişme/ölçek) ve `ClinicalDashboard` klinik değerleri yansıtır.
+3. **Beslenme** kartı: `NutritionController` içeriği `NutritionLibrary`'den doldurur.
+4. **AR kartları**: `HomeHubController` `ARLaunchContext.CurrentMode`'u (DrugRegion / ExploreAnatomy) yazar ve `ARMain` sahnesini yükler.
+
+AR sahnesi (`ARMain`):
+1. `SafetyDisclaimerScreen` → `AnatomyIntroScreen` (kısa giriş).
+2. `ARSessionController` cihaz uyumluluğunu, `PlaneDetectionMonitor` düz yüzeyi kontrol eder.
+3. Kullanıcı dokunur → `ARPlacementController` modeli yerleştirir (bölge çapaları modelde gömülüdür).
+4. `DrugRegionController` modeli görünce paneli açar: moda göre ilaç ya da bölge listesi; seçince `LiverRegionMarker` parlar ve `RegionAnnotationArrow` ok + etiket çizer.
+5. `← Ana ekran` butonu (`SceneNavigator`) `EducationHub`'a döner.
 
 ## Simülasyon ve Görsel Katman (Senaryo Sistemi)
 
@@ -104,10 +121,22 @@ Senaryolar:
 
 Üst menü `Post-transplantAR`:
 
-- **Build AR Scene** — gerçek AR sahnesi (telefonda test için)
-- **Build Simulation Preview (No AR)** — AR olmadan, Editor'de Play ile test edilebilen senaryo önizlemesi (procedural karaciğer + butonlu HUD). Telefon gerekmez.
+- **Build Home Hub** — kart bazlı ana ekran (`EducationHub`); giriş sahnesi yapılır (build index 0). Yolculuk ve beslenme bu sahnededir.
+- **Build AR Scene** — AR sahnesi (`ARMain`); ilaç→bölge ve keşif modları. Liver prefab'ına bölge çapalarını ekler.
+- **Build Simulation Preview (No AR)** — eski, AR'sız senaryo önizlemesi (geliştirici testi için).
 
-Her iki komut da gerektiğinde şu asset'leri otomatik üretir: `SimulationState.asset`, `Materials/LiverMaterial.mat`, `Prefabs/LiverModel.prefab`.
+Önerilen kurulum sırası: önce **Build AR Scene**, sonra **Build Home Hub** (böylece her iki sahne de build ayarlarına eklenir, `EducationHub` index 0 olur).
+
+Komutlar gerektiğinde şu asset'leri otomatik üretir: `SimulationState.asset`, `ARLaunchContext.asset`, `Materials/LiverMaterial.mat`, `Prefabs/LiverModel.prefab`.
+
+## Yeni modüller (bu sürüm)
+
+- `Modules/Education/Runtime/`: `ARLaunchContext` (sahne yönlendirme), `RecoveryJourneyContent` (yolculuk adımları), `DrugRegionLibrary` (ilaç→bölge + bölge metinleri), `NutritionLibrary` (beslenme).
+- `Modules/UI/Runtime/Screens/`: `HomeHubController`, `RecoveryJourneyController`, `DrugRegionController`, `NutritionController`, `SceneNavigator`.
+- `Modules/Visuals/Runtime/`: `LiverRegionMarker` (bölge çapası + parlama), `RegionAnnotationArrow` (ok + dünya-uzayı etiket).
+- `Editor/`: `HomeHubBuilder` (ana ekran kurucu), `UiBuildKit` (ortak uGUI yardımcıları).
+
+> Bölge çapalarının konumu, kullanılan karaciğer modeline göre Scene view'da elle ince ayar gerektirebilir (çapalar `LiverModel.prefab` altında görünür `Marker_*` nesneleridir).
 
 ## 3B Model
 

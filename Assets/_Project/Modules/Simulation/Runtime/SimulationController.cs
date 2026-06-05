@@ -96,6 +96,15 @@ namespace LiverAR.Modules.Simulation.Runtime
 
         public string GetDescription() => ScenarioNarrative.GetDescription(state);
 
+        /// <summary>
+        /// Durum dışarıdan (örn. yolculuk zaman çizelgesi) doğrudan değiştirildiğinde,
+        /// dinleyicileri (dashboard, görsel katman) güncellemek için tetiklenir.
+        /// </summary>
+        public void NotifyStateChanged()
+        {
+            RaiseChanged();
+        }
+
         private void ApplyMedicationTargets(bool adherent)
         {
             state.IsAdherent = adherent;

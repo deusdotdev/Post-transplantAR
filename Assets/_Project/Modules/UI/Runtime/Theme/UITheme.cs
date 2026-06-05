@@ -13,6 +13,9 @@ namespace LiverAR.Modules.UI.Runtime.Theme
         public static readonly Color PanelAccent = new Color(0.14f, 0.22f, 0.34f, 1f);
         public static readonly Color GlassPanel = new Color(0.07f, 0.13f, 0.20f, 0.98f);
         public static readonly Color Card = new Color(0.09f, 0.15f, 0.23f, 1f);
+        /// <summary>AR üzerinde yalnızca metin; kamera görünsün.</summary>
+        public static readonly Color Transparent = new Color(0f, 0f, 0f, 0f);
+        public static readonly Color OverlayBarTrack = new Color(0f, 0f, 0f, 0.35f);
 
         // Marka / aksiyon (belirgin teal + mercan vurgu)
         public static readonly Color Primary = new Color(0.15f, 0.78f, 0.72f, 1f);

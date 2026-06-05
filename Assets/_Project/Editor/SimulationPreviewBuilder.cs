@@ -69,7 +69,8 @@ namespace LiverAR.EditorTools
             SetField(manipulator, "previewTarget", liver.transform);
             SetFieldBool(manipulator, "enableMouseDrag", true);
             SetFieldBool(manipulator, "limitToUpperViewport", true);
-            SetPropertyFloat(manipulator, "viewportMinYNormalized", 0.30f);
+            var sheetNorm = EducationUIBuilder.CompactSheetHeight / EducationUIBuilder.RefScreenHeight;
+            SetPropertyFloat(manipulator, "viewportMinYNormalized", sheetNorm);
             SetPropertyFloat(manipulator, "rotationSpeed", 0.95f);
             SetPropertyFloat(manipulator, "mouseRotationSpeed", 10f);
             SetFieldBool(manipulator, "enableAutoRotate", true);
@@ -77,7 +78,7 @@ namespace LiverAR.EditorTools
             SetPropertyFloat(manipulator, "autoRotateResumeDelay", 0.45f);
 
             FrameCameraUpperViewport(cam, liver);
-            cam.rect = new Rect(0f, 0.30f, 1f, 0.70f);
+            cam.rect = new Rect(0f, sheetNorm, 1f, 1f - sheetNorm);
 
             // --- UI (zengin eğitim paneli; önizlemede tam ekran) ---
             var canvasGo = CreateCanvas();

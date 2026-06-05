@@ -2,8 +2,11 @@
 using System.IO;
 using LiverAR.Bootstrap;
 using LiverAR.Modules.AR.Runtime.Controllers;
+using LiverAR.Modules.Education.Runtime;
 using LiverAR.Modules.Interaction.Runtime.Input;
 using LiverAR.Modules.Simulation.Runtime.Data;
+using LiverAR.Modules.UI.Runtime.Screens;
+using LiverAR.Modules.UI.Runtime.Theme;
 using LiverAR.Modules.Visuals.Runtime;
 using Unity.XR.CoreUtils;
 using UnityEditor;
@@ -98,7 +101,9 @@ namespace LiverAR.EditorTools
             var interactionGo = new GameObject("AR Interaction");
             var placement = interactionGo.AddComponent<ARPlacementController>();
             SetField(placement, "raycastManager", raycastManager);
-            SetField(placement, "liverPrefab", CreateLiverPrefab());
+            var liverPrefab = CreateLiverPrefab();
+            EnsureRegionMarkers(liverPrefab);
+            SetField(placement, "liverPrefab", liverPrefab);
 
             var tapInput = interactionGo.AddComponent<TapToPlaceInput>();
             SetField(tapInput, "placementController", placement);
@@ -120,8 +125,12 @@ namespace LiverAR.EditorTools
             state.CurrentScenario = ScenarioType.None;
             EditorUtility.SetDirty(state);
 
-            var ui = EducationUIBuilder.Build(canvasGo.transform, state, includeArStatusStrip: true);
+            var launch = LoadOrCreateLaunchContext();
+            var ui = EducationUIBuilder.Build(canvasGo.transform, state, includeArStatusStrip: true,
+                compactBottomSheet: true, buildScenarioMenu: false);
             EducationUIBuilder.BuildArPlacementPrompt(canvasGo.transform, ui.Flow, placement);
+            BuildDrugRegionUI(canvasGo.transform, launch, cam);
+            BuildHomeButton(canvasGo.transform);
 
             // --- Koordinatör ---
             var coordinatorGo = new GameObject("AR Coordinator");
@@ -172,8 +181,18 @@ namespace LiverAR.EditorTools
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
 
-            var buildScene = new EditorBuildSettingsScene(ScenePath, true);
-            EditorBuildSettings.scenes = new[] { buildScene };
+            // Ana ekran varsa giriş sahnesi (index 0) olarak kalsın; AR ikinci sahne.
+            const string hubScenePath = SceneFolder + "/EducationHub.unity";
+            var arScene = new EditorBuildSettingsScene(ScenePath, true);
+            if (File.Exists(hubScenePath))
+            {
+                var hub = new EditorBuildSettingsScene(hubScenePath, true);
+                EditorBuildSettings.scenes = new[] { hub, arScene };
+            }
+            else
+            {
+                EditorBuildSettings.scenes = new[] { arScene };
+            }
         }
 
         private const string LiverPrefabPath = "Assets/_Project/Prefabs/LiverModel.prefab";
@@ -221,6 +240,150 @@ namespace LiverAR.EditorTools
             AssetDatabase.CreateAsset(mat, LiverMaterialPath);
             AssetDatabase.SaveAssets();
             return mat;
+        }
+
+        private const string LaunchAssetPath = "Assets/_Project/ARLaunchContext.asset";
+
+        private static ARLaunchContext LoadOrCreateLaunchContext()
+        {
+            var ctx = AssetDatabase.LoadAssetAtPath<ARLaunchContext>(LaunchAssetPath);
+            if (ctx == null)
+            {
+                ctx = ScriptableObject.CreateInstance<ARLaunchContext>();
+                EnsureFolder(Path.GetDirectoryName(LaunchAssetPath));
+                AssetDatabase.CreateAsset(ctx, LaunchAssetPath);
+                AssetDatabase.SaveAssets();
+            }
+
+            return ctx;
+        }
+
+        /// <summary>Liver prefab'ına bölge çapalarını (Sağ/Sol lob, safra, damar) ekler (idempotent).</summary>
+        private static void EnsureRegionMarkers(GameObject prefab)
+        {
+            if (prefab == null)
+            {
+                return;
+            }
+
+            var root = PrefabUtility.LoadPrefabContents(AssetDatabase.GetAssetPath(prefab));
+            try
+            {
+                if (root.GetComponentInChildren<LiverRegionMarker>(true) != null)
+                {
+                    return; // zaten eklenmiş
+                }
+
+                var renderers = root.GetComponentsInChildren<Renderer>(true);
+                if (renderers.Length == 0)
+                {
+                    return;
+                }
+
+                var bounds = renderers[0].bounds;
+                foreach (var r in renderers)
+                {
+                    bounds.Encapsulate(r.bounds);
+                }
+
+                var c = bounds.center;
+                var e = bounds.extents;
+                var maxDim = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+                var radius = Mathf.Max(0.005f, maxDim * 0.05f);
+                var labelDist = Mathf.Max(0.04f, maxDim * 0.55f);
+
+                AddMarker(root.transform, "Marker_RightLobe", LiverRegionId.RightLobe, "Sağ lob",
+                    c + new Vector3(e.x * 0.45f, e.y * 0.15f, 0f),
+                    new Vector3(1f, 0.7f, 0f), labelDist, radius);
+                AddMarker(root.transform, "Marker_LeftLobe", LiverRegionId.LeftLobe, "Sol lob",
+                    c + new Vector3(-e.x * 0.55f, e.y * 0.1f, 0f),
+                    new Vector3(-1f, 0.7f, 0f), labelDist, radius);
+                AddMarker(root.transform, "Marker_BileDuct", LiverRegionId.BileDuct, "Safra yolları",
+                    c + new Vector3(0f, -e.y * 0.5f, e.z * 0.2f),
+                    new Vector3(0.2f, -1f, 0.3f), labelDist, radius);
+                AddMarker(root.transform, "Marker_VesselInlet", LiverRegionId.VesselInlet, "Damar girişi",
+                    c + new Vector3(0f, e.y * 0.1f, -e.z * 0.5f),
+                    new Vector3(0f, 0.6f, -1f), labelDist, radius);
+
+                PrefabUtility.SaveAsPrefabAsset(root, AssetDatabase.GetAssetPath(prefab));
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        private static void AddMarker(Transform parent, string name, LiverRegionId region,
+            string displayName, Vector3 worldPos, Vector3 labelDir, float labelDist, float radius)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, true);
+            go.transform.position = worldPos;
+            go.transform.rotation = parent.rotation;
+
+            var marker = go.AddComponent<LiverRegionMarker>();
+            var so = new SerializedObject(marker);
+            so.FindProperty("region").enumValueIndex = (int)region;
+            so.FindProperty("displayName").stringValue = displayName;
+            so.FindProperty("labelDirectionLocal").vector3Value = labelDir;
+            so.FindProperty("labelWorldDistance").floatValue = labelDist;
+            so.FindProperty("markerWorldRadius").floatValue = radius;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void BuildDrugRegionUI(Transform canvas, ARLaunchContext launch, Camera cam)
+        {
+            var panel = UiBuildKit.CreatePanel(canvas, "DrugRegionPanel",
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 560f),
+                new Color(0.04f, 0.08f, 0.13f, 0.84f));
+            panel.SetActive(false);
+
+            var title = UiBuildKit.CreateText(panel.transform, "TitleText",
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(20f, -66f), new Vector2(-20f, -12f),
+                TextAnchor.MiddleLeft, 30, "Seç", UITheme.TextPrimary, bold: true);
+
+            var detail = UiBuildKit.CreateText(panel.transform, "DetailText",
+                new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(20f, 118f), new Vector2(-20f, -72f),
+                TextAnchor.UpperLeft, 21, "", UITheme.TextSecondary);
+
+            var container = new GameObject("TopicButtons");
+            container.transform.SetParent(panel.transform, false);
+            var crt = container.AddComponent<RectTransform>();
+            crt.anchorMin = new Vector2(0f, 0f);
+            crt.anchorMax = new Vector2(1f, 0f);
+            crt.offsetMin = new Vector2(12f, 12f);
+            crt.offsetMax = new Vector2(-12f, 104f);
+
+            var layout = container.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 8f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = true;
+
+            // Kontrolcü ayrı, her zaman aktif bir nesnede olmalı: panel kapalıyken
+            // panelin üzerindeki bileşenin Update'i çalışmaz ve kendini açamaz.
+            var controllerGo = new GameObject("Drug Region Controller");
+            controllerGo.transform.SetParent(canvas, false);
+            var controller = controllerGo.AddComponent<DrugRegionController>();
+            UiBuildKit.SetRef(controller, "launchContext", launch);
+            UiBuildKit.SetRef(controller, "viewCamera", cam);
+            UiBuildKit.SetRef(controller, "panelRoot", panel);
+            UiBuildKit.SetRef(controller, "topicButtonContainer", crt);
+            UiBuildKit.SetRef(controller, "titleText", title);
+            UiBuildKit.SetRef(controller, "detailText", detail);
+            UiBuildKit.SetFloat(controller, "arrowReferenceSize", 0.15f);
+        }
+
+        private static void BuildHomeButton(Transform canvas)
+        {
+            var navGo = new GameObject("Scene Navigator");
+            navGo.transform.SetParent(canvas, false);
+            var nav = navGo.AddComponent<SceneNavigator>();
+
+            UiBuildKit.CreateButton(canvas, "BtnHome", "← Ana ekran",
+                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -70f), new Vector2(236f, -16f),
+                UITheme.PanelAccent, nav.GoHome, 22);
         }
 
         private static LiverAR.Modules.Simulation.Runtime.Data.SimulationState LoadOrCreateState()
