@@ -50,8 +50,9 @@ namespace LiverAR.Modules.Education.Runtime
 
                 new NutritionGroup("Protein ve iyileşme", new[]
                 {
-                    new NutritionItem("İyileşme için yeterli protein alın (yumurta, tavuk, baklagil).", true),
-                    new NutritionItem("Öğünleri düzenli ve dengeli tutun.", true)
+                    new NutritionItem("İyileşme için yeterli protein alın (yumurta, tavuk, balık, baklagil).", true),
+                    new NutritionItem("Öğünleri düzenli ve dengeli tutun.", true),
+                    new NutritionItem("Aşırı protein takviyelerini ekibe sormadan kullanmayın.", false)
                 }),
 
                 new NutritionGroup("Sıvı, tuz ve şeker", new[]
@@ -64,7 +65,29 @@ namespace LiverAR.Modules.Education.Runtime
                 new NutritionGroup("Kaçınılması gerekenler", new[]
                 {
                     new NutritionItem("Alkol tüketmeyin.", false),
-                    new NutritionItem("İşlenmiş, çok yağlı ve aşırı şekerli gıdaları sınırlayın.", false)
+                    new NutritionItem("İşlenmiş, çok yağlı ve aşırı şekerli gıdaları sınırlayın.", false),
+                    new NutritionItem("Açık büfelerden ve uzun süre oda sıcaklığında bekleyen yiyeceklerden kaçının.", false)
+                }),
+
+                new NutritionGroup("Lif, sindirim ve kabızlık", new[]
+                {
+                    new NutritionItem("Tam tahıllar, sebze ve meyve ile yeterli lif alın.", true),
+                    new NutritionItem("Günde düzenli hafif hareket sindirime yardımcı olur.", true),
+                    new NutritionItem("Kabızlık için yüksek doz lif takviyesine kendi başınıza başlamayın.", false)
+                }),
+
+                new NutritionGroup("Kemik sağlığı ve vitaminler", new[]
+                {
+                    new NutritionItem("Kalsiyum ve D vitamini düzeylerinizi ekibinizle takip edin.", true),
+                    new NutritionItem("Süt, yoğurt ve peynir gibi kalsiyum kaynaklarını planlı tüketin.", true),
+                    new NutritionItem("Yüksek doz vitamin/mineral kombinasyonlarını onaysız kullanmayın.", false)
+                }),
+
+                new NutritionGroup("Öğün düzeni ve porsiyon", new[]
+                {
+                    new NutritionItem("Günde 4–6 küçük öğünle kan şekerini daha dengeli tutun.", true),
+                    new NutritionItem("Porsiyonları küçük tabakla kontrol edin.", true),
+                    new NutritionItem("Gece geç saatlerde ağır ve yağlı tek öğünlerden kaçının.", false)
                 })
             };
         }

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3693633327774159830
+--- !u!1 &693912428398387322
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3669884138419064012}
-  - component: {fileID: 3887433825418452604}
+  - component: {fileID: 1351576188799777524}
+  - component: {fileID: 9171234284133536415}
   m_Layer: 0
   m_Name: Marker_VesselInlet
   m_TagString: Untagged
@@ -17,28 +17,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3669884138419064012
+--- !u!4 &1351576188799777524
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3693633327774159830}
+  m_GameObject: {fileID: 693912428398387322}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.013934302, z: -0.08490472}
-  m_LocalScale: {x: 1.5999997, y: 1.5999997, z: 1.5999997}
+  m_LocalPosition: {x: 0, y: -0.032294817, z: -0.03491815}
+  m_LocalScale: {x: 0.7722109, y: 0.7722109, z: 0.7722109}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5337166398576633011}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3887433825418452604
+--- !u!114 &9171234284133536415
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3693633327774159830}
+  m_GameObject: {fileID: 693912428398387322}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d43c39863a7dd4b4d8397d6ed486f445, type: 3}
@@ -46,11 +46,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   region: 3
   displayName: "Damar giri\u015Fi"
-  labelDirectionLocal: {x: 0, y: 0.6, z: -1}
+  labelDirectionLocal: {x: 0, y: 0.35, z: -1}
   labelWorldDistance: 0.176
   markerWorldRadius: 0.016
+  tapRadiusMultiplier: 3
   highlightColor: {r: 0.15, g: 0.78, b: 0.72, a: 1}
---- !u!1 &6723208049754677061
+--- !u!1 &2474743241994045875
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,58 +59,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6169639527162993725}
-  - component: {fileID: 589809194051935393}
-  m_Layer: 0
-  m_Name: Marker_RightLobe
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6169639527162993725
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6723208049754677061}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.11519997, y: 0.020901447, z: 0}
-  m_LocalScale: {x: 1.5999997, y: 1.5999997, z: 1.5999997}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5337166398576633011}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &589809194051935393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6723208049754677061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d43c39863a7dd4b4d8397d6ed486f445, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  region: 0
-  displayName: "Sa\u011F lob"
-  labelDirectionLocal: {x: 1, y: 0.7, z: 0}
-  labelWorldDistance: 0.176
-  markerWorldRadius: 0.016
-  highlightColor: {r: 0.15, g: 0.78, b: 0.72, a: 1}
---- !u!1 &7689613266347058265
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3675497790103430033}
-  - component: {fileID: 7657994181249369503}
+  - component: {fileID: 4069047188293896653}
+  - component: {fileID: 782368376687267869}
   m_Layer: 0
   m_Name: Marker_LeftLobe
   m_TagString: Untagged
@@ -117,28 +68,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3675497790103430033
+--- !u!4 &4069047188293896653
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7689613266347058265}
+  m_GameObject: {fileID: 2474743241994045875}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.14079997, y: 0.013934302, z: 0}
-  m_LocalScale: {x: 1.5999997, y: 1.5999997, z: 1.5999997}
+  m_LocalPosition: {x: -0.067954555, y: 0.008498622, z: 0}
+  m_LocalScale: {x: 0.7722109, y: 0.7722109, z: 0.7722109}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5337166398576633011}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7657994181249369503
+--- !u!114 &782368376687267869
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7689613266347058265}
+  m_GameObject: {fileID: 2474743241994045875}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d43c39863a7dd4b4d8397d6ed486f445, type: 3}
@@ -149,8 +100,9 @@ MonoBehaviour:
   labelDirectionLocal: {x: -1, y: 0.7, z: 0}
   labelWorldDistance: 0.176
   markerWorldRadius: 0.016
+  tapRadiusMultiplier: 3
   highlightColor: {r: 0.15, g: 0.78, b: 0.72, a: 1}
---- !u!1 &7868841512107822646
+--- !u!1 &3849581966172712424
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,8 +110,59 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5537310761023525557}
-  - component: {fileID: 7597417311464810671}
+  - component: {fileID: 8379317369319078396}
+  - component: {fileID: 3174949278622257608}
+  m_Layer: 0
+  m_Name: Marker_RightLobe
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8379317369319078396
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3849581966172712424}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.055599183, y: 0.01274794, z: 0}
+  m_LocalScale: {x: 0.7722109, y: 0.7722109, z: 0.7722109}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5337166398576633011}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3174949278622257608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3849581966172712424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d43c39863a7dd4b4d8397d6ed486f445, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  region: 0
+  displayName: "Sa\u011F lob"
+  labelDirectionLocal: {x: 1, y: 0.7, z: 0}
+  labelWorldDistance: 0.176
+  markerWorldRadius: 0.016
+  tapRadiusMultiplier: 3
+  highlightColor: {r: 0.15, g: 0.78, b: 0.72, a: 1}
+--- !u!1 &5671800806108934642
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 745338235845996802}
+  - component: {fileID: 5589266072601251200}
   m_Layer: 0
   m_Name: Marker_BileDuct
   m_TagString: Untagged
@@ -167,28 +170,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5537310761023525557
+--- !u!4 &745338235845996802
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7868841512107822646}
+  m_GameObject: {fileID: 5671800806108934642}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.06967144, z: 0.033961892}
-  m_LocalScale: {x: 1.5999997, y: 1.5999997, z: 1.5999997}
+  m_LocalPosition: {x: 0.014826449, y: -0.052691538, z: 0.0066510765}
+  m_LocalScale: {x: 0.7722109, y: 0.7722109, z: 0.7722109}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5337166398576633011}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7597417311464810671
+--- !u!114 &5589266072601251200
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7868841512107822646}
+  m_GameObject: {fileID: 5671800806108934642}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d43c39863a7dd4b4d8397d6ed486f445, type: 3}
@@ -196,9 +199,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   region: 2
   displayName: "Safra yollar\u0131"
-  labelDirectionLocal: {x: 0.2, y: -1, z: 0.3}
+  labelDirectionLocal: {x: 0.15, y: -0.9, z: 0.25}
   labelWorldDistance: 0.176
   markerWorldRadius: 0.016
+  tapRadiusMultiplier: 3
   highlightColor: {r: 0.15, g: 0.78, b: 0.72, a: 1}
 --- !u!1 &7939617686723055634
 GameObject:
@@ -228,14 +232,14 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.6250001, y: 0.6250001, z: 0.6250001}
+  m_LocalScale: {x: 1.294983, y: 1.294983, z: 1.294983}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5277730865008535432}
-  - {fileID: 6169639527162993725}
-  - {fileID: 3675497790103430033}
-  - {fileID: 5537310761023525557}
-  - {fileID: 3669884138419064012}
+  - {fileID: 3074876420845075191}
+  - {fileID: 8379317369319078396}
+  - {fileID: 4069047188293896653}
+  - {fileID: 745338235845996802}
+  - {fileID: 1351576188799777524}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8821045599332211044
@@ -263,7 +267,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   state: {fileID: 11400000, guid: 108828d001e1f4c93a320fc4d31c144c, type: 2}
-  liverRenderer: {fileID: 3186414252042107366}
+  liverRenderer: {fileID: 5816238068815667338}
   liverTransform: {fileID: 5337166398576633011}
   minScale: 0.88
   maxScale: 1.08
@@ -275,7 +279,7 @@ MonoBehaviour:
   colorLerpSpeed: 2
   swellingAmount: 0.2
   swellingSpeed: 3.5
---- !u!1001 &8051951206994047096
+--- !u!1001 &8839093992598089767
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -283,47 +287,59 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5337166398576633011}
     m_Modifications:
-    - target: {fileID: -6689036041284674117, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: -212285753890768171, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_Name
       value: humans_liver
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.000000029802322
+      value: -0.011333577
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.256
+      value: -0.3475114
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.000000044703484
+      value: 0.07070436
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+    - target: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
@@ -331,14 +347,14 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: -5645937942226959685, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
---- !u!23 &3186414252042107366 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4865624926622468510, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
-  m_PrefabInstance: {fileID: 8051951206994047096}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &5277730865008535432 stripped
+  m_SourcePrefab: {fileID: -8037938140082288066, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+--- !u!4 &3074876420845075191 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
-  m_PrefabInstance: {fileID: 8051951206994047096}
+  m_CorrespondingSourceObject: {fileID: 5766545926158600912, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+  m_PrefabInstance: {fileID: 8839093992598089767}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &5816238068815667338 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6188604965070204755, guid: f5d7572638e214989aefbddbb0a68be9, type: 3}
+  m_PrefabInstance: {fileID: 8839093992598089767}
   m_PrefabAsset: {fileID: 0}

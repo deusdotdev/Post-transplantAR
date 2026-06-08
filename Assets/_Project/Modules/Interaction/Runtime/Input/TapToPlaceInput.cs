@@ -1,4 +1,5 @@
 using LiverAR.Modules.AR.Runtime.Controllers;
+using LiverAR.Modules.Visuals.Runtime;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -29,6 +30,12 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
                 return;
             }
 
+            // Bir bölgeye dokunulduysa modeli taşıma; dokunmayı keşif/bölge seçimine bırak.
+            if (HitsRegionMarker(touch.position))
+            {
+                return;
+            }
+
             if (!placementController.TryPlaceFromScreenTap(touch.position))
             {
                 // Üst kamera alanında düzlem yoksa yine de önüne yerleştirmeyi dene.
@@ -40,6 +47,19 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
         {
             return EventSystem.current != null &&
                    EventSystem.current.IsPointerOverGameObject(fingerId);
+        }
+
+        private static bool HitsRegionMarker(Vector2 screenPosition)
+        {
+            var cam = Camera.main;
+            if (cam == null)
+            {
+                return false;
+            }
+
+            var ray = cam.ScreenPointToRay(screenPosition);
+            return Physics.Raycast(ray, out var hit, 100f) &&
+                   hit.collider.GetComponentInParent<LiverRegionMarker>() != null;
         }
     }
 }

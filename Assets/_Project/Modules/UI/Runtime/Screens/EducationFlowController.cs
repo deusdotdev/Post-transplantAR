@@ -49,6 +49,33 @@ namespace LiverAR.Modules.UI.Runtime.Screens
 
         private void Start()
         {
+            // Hub kartından açılan ilaç/keşfet AR: tam ekran uyarı üst şeridi kaplamasın.
+            if (deferMenuUntilModelPlaced)
+            {
+                _disclaimerDone = true;
+                _introDone = true;
+                if (disclaimerScreen != null)
+                {
+                    disclaimerScreen.enabled = false;
+                    disclaimerScreen.gameObject.SetActive(false);
+                }
+
+                if (anatomyIntro != null)
+                {
+                    anatomyIntro.enabled = false;
+                    anatomyIntro.gameObject.SetActive(false);
+                }
+
+                if (educationPanelRoot != null)
+                {
+                    educationPanelRoot.SetActive(false);
+                }
+
+                ArTopBarCleanup.Run();
+                FlowComplete?.Invoke();
+                return;
+            }
+
             if (educationPanelRoot != null)
             {
                 educationPanelRoot.SetActive(_introDone && _disclaimerDone);

@@ -19,11 +19,18 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         [SerializeField] private GameObject journeyPanel;
         [SerializeField] private GameObject nutritionPanel;
 
-        [Header("3B sahne (yolculukta görünür)")]
+        [Header("3B sahne")]
         [SerializeField] private GameObject liverStage;
+        [SerializeField] private GameObject liverModel;
+        [SerializeField] private Camera hubCamera;
 
         private void Start()
         {
+            if (hubCamera == null)
+            {
+                hubCamera = Camera.main;
+            }
+
             ShowHome();
         }
 
@@ -33,6 +40,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             SetPanel(journeyPanel, false);
             SetPanel(nutritionPanel, false);
             SetStage(true);
+            FrameLiverForHome();
         }
 
         public void ShowJourney()
@@ -41,6 +49,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             SetPanel(journeyPanel, true);
             SetPanel(nutritionPanel, false);
             SetStage(true);
+            FrameLiverForJourney();
         }
 
         public void ShowNutrition()
@@ -80,6 +89,41 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             {
                 liverStage.SetActive(active);
             }
+        }
+
+        private void FrameLiverForHome()
+        {
+            var liver = ResolveLiverModel();
+            if (hubCamera != null && liver != null)
+            {
+                HubCameraFraming.FrameForHome(hubCamera, liver);
+            }
+        }
+
+        private void FrameLiverForJourney()
+        {
+            var liver = ResolveLiverModel();
+            if (hubCamera != null && liver != null)
+            {
+                HubCameraFraming.FrameForJourney(hubCamera, liver);
+            }
+        }
+
+        private GameObject ResolveLiverModel()
+        {
+            if (liverModel != null)
+            {
+                return liverModel;
+            }
+
+            if (liverStage == null)
+            {
+                return null;
+            }
+
+            return liverStage.transform.childCount > 0
+                ? liverStage.transform.GetChild(0).gameObject
+                : liverStage;
         }
 
         private static void SetPanel(GameObject panel, bool active)

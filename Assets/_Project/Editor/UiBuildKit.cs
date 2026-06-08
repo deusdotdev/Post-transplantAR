@@ -11,6 +11,14 @@ namespace LiverAR.EditorTools
     /// <summary>Sahne kurucuları için ortak uGUI yardımcıları (panel, metin, buton, scroll).</summary>
     internal static class UiBuildKit
     {
+        public const float HomeBackButtonHeight = 52f;
+        public const float HomeBackTopInset = 76f;
+        public const float HomeBackButtonWidth = 228f;
+        public const float HomeBackBarPadBottom = 6f;
+
+        public static float HomeBackBarOccupiedHeight =>
+            HomeBackTopInset + HomeBackButtonHeight + HomeBackBarPadBottom;
+
         public static GameObject CreateCanvas(string name = "UI Canvas")
         {
             var go = new GameObject(name);
@@ -76,7 +84,7 @@ namespace LiverAR.EditorTools
             rt.offsetMax = offsetMax;
 
             var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
+            shadow.effectColor = UITheme.TextShadow;
             shadow.effectDistance = new Vector2(0f, -3f);
 
             var img = go.AddComponent<Image>();
@@ -112,6 +120,48 @@ namespace LiverAR.EditorTools
             return go;
         }
 
+        /// <summary>Üstte kompakt koyu «Ana ekran» butonu (hub, yolculuk, beslenme, AR).</summary>
+        public static GameObject CreateHomeBackBar(Transform parent, string buttonName, string label,
+            UnityAction onHome, int fontSize = 24)
+        {
+            var button = CreateButton(parent, buttonName, label,
+                new Vector2(0f, 1f), new Vector2(0f, 1f),
+                new Vector2(20f, -(HomeBackTopInset + HomeBackButtonHeight)),
+                new Vector2(20f + HomeBackButtonWidth, -HomeBackTopInset),
+                UITheme.HomeBackButtonBg, onHome, fontSize);
+
+            var shadow = button.GetComponent<Shadow>();
+            if (shadow != null)
+            {
+                Object.DestroyImmediate(shadow);
+            }
+
+            var img = button.GetComponent<Image>();
+            if (img != null)
+            {
+                img.color = UITheme.HomeBackButtonBg;
+            }
+
+            var btn = button.GetComponent<Button>();
+            if (btn != null)
+            {
+                var colors = btn.colors;
+                colors.normalColor = UITheme.HomeBackButtonBg;
+                colors.highlightedColor = Color.Lerp(UITheme.HomeBackButtonBg, Color.white, 0.12f);
+                colors.pressedColor = Color.Lerp(UITheme.HomeBackButtonBg, Color.black, 0.18f);
+                btn.colors = colors;
+            }
+
+            var lbl = button.transform.Find("Label")?.GetComponent<Text>();
+            if (lbl != null)
+            {
+                lbl.color = UITheme.TextOnPrimary;
+            }
+
+            button.transform.SetAsLastSibling();
+            return button;
+        }
+
         /// <summary>Dikey kaydırılabilir liste oluşturur; doldurulacak content RectTransform'u döndürür.</summary>
         public static RectTransform CreateVerticalScroll(Transform parent, string name,
             Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, float spacing = 8f)
@@ -123,8 +173,11 @@ namespace LiverAR.EditorTools
             vrt.anchorMax = anchorMax;
             vrt.offsetMin = offsetMin;
             vrt.offsetMax = offsetMax;
-            viewport.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.001f);
-            viewport.AddComponent<Mask>().showMaskGraphic = false;
+            // Görünmez arka plan: ScrollRect'in parmakla kaydırma alması için raycast gerekir.
+            var viewportImage = viewport.AddComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0.001f);
+            viewportImage.raycastTarget = true;
+            viewport.AddComponent<RectMask2D>();
 
             var scroll = viewport.AddComponent<ScrollRect>();
             scroll.horizontal = false;

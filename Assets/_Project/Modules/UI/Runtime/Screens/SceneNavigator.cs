@@ -8,6 +8,18 @@ namespace LiverAR.Modules.UI.Runtime.Screens
     {
         [SerializeField] private string homeSceneName = "EducationHub";
 
+        private void Start()
+        {
+            ArTopBarCleanup.Run();
+            StartCoroutine(CleanupTopBarNextFrame());
+        }
+
+        private System.Collections.IEnumerator CleanupTopBarNextFrame()
+        {
+            yield return null;
+            ArTopBarCleanup.Run();
+        }
+
         public void GoHome()
         {
             LoadScene(homeSceneName);

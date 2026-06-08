@@ -56,7 +56,7 @@ namespace LiverAR.EditorTools
         private static void BuildIos(bool showDialog)
         {
             Directory.CreateDirectory(IosOutputFolder);
-            EnsureArSceneInBuild();
+            EnsureScenesInBuild();
 
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.iOS)
             {
@@ -86,7 +86,7 @@ namespace LiverAR.EditorTools
         private static void BuildAndroid(bool showDialog)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(AndroidApkPath)!);
-            EnsureArSceneInBuild();
+            EnsureScenesInBuild();
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.deusex.posttransplantar");
 
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
@@ -111,18 +111,43 @@ namespace LiverAR.EditorTools
             }
         }
 
-        private static void EnsureArSceneInBuild()
+        private static void EnsureScenesInBuild()
         {
-            const string scene = "Assets/_Project/Scenes/ARMain.unity";
-            if (!File.Exists(scene))
+            const string hubScene = "Assets/_Project/Scenes/EducationHub.unity";
+            const string arScene = "Assets/_Project/Scenes/ARMain.unity";
+
+            if (!File.Exists(arScene))
             {
-                throw new FileNotFoundException("ARMain yok — önce Build AR Scene çalıştır.");
+                throw new FileNotFoundException("ARMain yok — önce Post-transplantAR > Build AR Scene çalıştır.");
             }
 
-            if (EditorBuildSettings.scenes.All(s => s.path != scene))
+            var ordered = new System.Collections.Generic.List<EditorBuildSettingsScene>();
+
+            // Ana ekran varsa her zaman index 0 olmalı (uygulama hub'dan açılır).
+            if (File.Exists(hubScene))
             {
-                EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scene, true) };
+                ordered.Add(new EditorBuildSettingsScene(hubScene, true));
             }
+
+            ordered.Add(new EditorBuildSettingsScene(arScene, true));
+
+            // Build ayarlarındaki diğer mevcut sahneleri koru (varsa), kopyaları atla.
+            foreach (var s in EditorBuildSettings.scenes)
+            {
+                if (s == null || string.IsNullOrEmpty(s.path))
+                {
+                    continue;
+                }
+
+                if (s.path == hubScene || s.path == arScene)
+                {
+                    continue;
+                }
+
+                ordered.Add(s);
+            }
+
+            EditorBuildSettings.scenes = ordered.ToArray();
         }
 
         private static string[] GetScenes()

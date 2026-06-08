@@ -112,13 +112,22 @@ namespace LiverAR.Modules.Education.Runtime
             return new[]
             {
                 new RegionInfo(LiverRegionId.RightLobe, "Sağ lob",
-                    "Karaciğerin yaklaşık dörtte üçü. Kanı süzer, zararlı maddeleri parçalar, enerji depolar."),
+                    "Karaciğerin en büyük bölümüdür ve gövdenin sağ tarafında yer alır. Kanı süzerek toksinleri " +
+                    "temizler, ilaçları parçalar, protein sentezler ve enerji depolar. Nakil sonrası bu bölgenin " +
+                    "düzenli çalışması, günlük yaşam kaliten ve ilaçların etkili olması için temel bir gerekliliktir."),
                 new RegionInfo(LiverRegionId.LeftLobe, "Sol lob",
-                    "Daha küçük bölüm. Nakilde greftin önemli bir kısmı buradan gelebilir; zamanla yenilenir."),
+                    "Sağ loba göre daha küçük olsa da metabolik işlevlere önemli katkı sağlar. Nakilde greftin " +
+                    "önemli bir kısmı buradan gelir ve zamanla yenilenir. Ekip, AST/ALT gibi kan değerleriyle " +
+                    "bu bölgenin iyileşmesini düzenli olarak takip eder."),
                 new RegionInfo(LiverRegionId.BileDuct, "Safra yolları",
-                    "Safrayı bağırsağa taşır. Burada darlık/tıkanma sarılığa yol açabilir."),
-                new RegionInfo(LiverRegionId.VesselInlet, "Damar girişi",
-                    "Karaciğere kan getiren damarların ve anastomozun bulunduğu bölge; kanlanma için kritiktir.")
+                    "Karaciğerden üretilen safra, bu bölgedeki kanallar aracılığıyla safra kesesi ve ince bağırsağa " +
+                    "taşınır. Darlık veya tıkanma olduğunda ciltte sararma, koyu renkli idrar ve kaşıntı görülebilir. " +
+                    "Nakil sonrası safra yolları yakından izlenir; erken müdahale sarılık riskini azaltmaya yardımcı olur."),
+                new RegionInfo(LiverRegionId.VesselInlet, "Damar girişi (porta hepatis)",
+                    "Portal ven ve hepatik arter gibi hayati damarlar karaciğere bu giriş bölgesinden ulaşır. " +
+                    "Nakilde damarların bağlandığı nokta (anastomoz) greftin kanlanması için kritiktir. Bu bölgede " +
+                    "kan akımında sorun olursa karaciğer fonksiyonları hızla etkilenebilir; bu yüzden erken uyarı " +
+                    "belirtileri ekip tarafından dikkatle izlenir.")
             };
         }
     }

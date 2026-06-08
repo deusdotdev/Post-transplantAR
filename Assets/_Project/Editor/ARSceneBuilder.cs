@@ -269,11 +269,6 @@ namespace LiverAR.EditorTools
             var root = PrefabUtility.LoadPrefabContents(AssetDatabase.GetAssetPath(prefab));
             try
             {
-                if (root.GetComponentInChildren<LiverRegionMarker>(true) != null)
-                {
-                    return; // zaten eklenmiş
-                }
-
                 var renderers = root.GetComponentsInChildren<Renderer>(true);
                 if (renderers.Length == 0)
                 {
@@ -292,18 +287,23 @@ namespace LiverAR.EditorTools
                 var radius = Mathf.Max(0.005f, maxDim * 0.05f);
                 var labelDist = Mathf.Max(0.04f, maxDim * 0.55f);
 
-                AddMarker(root.transform, "Marker_RightLobe", LiverRegionId.RightLobe, "Sağ lob",
-                    c + new Vector3(e.x * 0.45f, e.y * 0.15f, 0f),
-                    new Vector3(1f, 0.7f, 0f), labelDist, radius);
-                AddMarker(root.transform, "Marker_LeftLobe", LiverRegionId.LeftLobe, "Sol lob",
-                    c + new Vector3(-e.x * 0.55f, e.y * 0.1f, 0f),
-                    new Vector3(-1f, 0.7f, 0f), labelDist, radius);
-                AddMarker(root.transform, "Marker_BileDuct", LiverRegionId.BileDuct, "Safra yolları",
-                    c + new Vector3(0f, -e.y * 0.5f, e.z * 0.2f),
-                    new Vector3(0.2f, -1f, 0.3f), labelDist, radius);
-                AddMarker(root.transform, "Marker_VesselInlet", LiverRegionId.VesselInlet, "Damar girişi",
-                    c + new Vector3(0f, e.y * 0.1f, -e.z * 0.5f),
-                    new Vector3(0f, 0.6f, -1f), labelDist, radius);
+                if (root.transform.Find("Marker_RightLobe") == null)
+                {
+                    AddMarker(root.transform, "Marker_RightLobe", LiverRegionId.RightLobe, "Sağ lob",
+                        c + new Vector3(e.x * 0.45f, e.y * 0.15f, 0f),
+                        new Vector3(1f, 0.7f, 0f), labelDist, radius);
+                    AddMarker(root.transform, "Marker_LeftLobe", LiverRegionId.LeftLobe, "Sol lob",
+                        c + new Vector3(-e.x * 0.55f, e.y * 0.1f, 0f),
+                        new Vector3(-1f, 0.7f, 0f), labelDist, radius);
+                }
+
+                // Safra/damar: her Build AR Scene'de anatomiye göre yeniden hizalanır.
+                EnsureOrUpdateMarker(root.transform, "Marker_BileDuct", LiverRegionId.BileDuct, "Safra yolları",
+                    c + new Vector3(e.x * 0.12f, -e.y * 0.62f, e.z * 0.08f),
+                    new Vector3(0.15f, -0.9f, 0.25f), labelDist, radius);
+                EnsureOrUpdateMarker(root.transform, "Marker_VesselInlet", LiverRegionId.VesselInlet,
+                    "Damar girişi", c + new Vector3(0f, -e.y * 0.38f, -e.z * 0.42f),
+                    new Vector3(0f, 0.35f, -1f), labelDist, radius);
 
                 PrefabUtility.SaveAsPrefabAsset(root, AssetDatabase.GetAssetPath(prefab));
             }
@@ -318,10 +318,37 @@ namespace LiverAR.EditorTools
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, true);
+            ApplyMarker(go, parent, region, displayName, worldPos, labelDir, labelDist, radius);
+        }
+
+        /// <summary>Var olan marker'ı günceller veya yoksa oluşturur (safra/damar anatomi düzeltmeleri).</summary>
+        private static void EnsureOrUpdateMarker(Transform parent, string name, LiverRegionId region,
+            string displayName, Vector3 worldPos, Vector3 labelDir, float labelDist, float radius)
+        {
+            var existing = parent.Find(name);
+            var go = existing != null ? existing.gameObject : new GameObject(name);
+            if (existing == null)
+            {
+                go.transform.SetParent(parent, true);
+                go.AddComponent<LiverRegionMarker>();
+            }
+
+            ApplyMarker(go, parent, region, displayName, worldPos, labelDir, labelDist, radius);
+        }
+
+        private static void ApplyMarker(GameObject go, Transform parent, LiverRegionId region,
+            string displayName, Vector3 worldPos, Vector3 labelDir, float labelDist, float radius)
+        {
+            go.transform.SetParent(parent, true);
             go.transform.position = worldPos;
             go.transform.rotation = parent.rotation;
 
-            var marker = go.AddComponent<LiverRegionMarker>();
+            var marker = go.GetComponent<LiverRegionMarker>();
+            if (marker == null)
+            {
+                marker = go.AddComponent<LiverRegionMarker>();
+            }
+
             var so = new SerializedObject(marker);
             so.FindProperty("region").enumValueIndex = (int)region;
             so.FindProperty("displayName").stringValue = displayName;
@@ -334,17 +361,31 @@ namespace LiverAR.EditorTools
         private static void BuildDrugRegionUI(Transform canvas, ARLaunchContext launch, Camera cam)
         {
             var panel = UiBuildKit.CreatePanel(canvas, "DrugRegionPanel",
-                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 560f),
-                new Color(0.04f, 0.08f, 0.13f, 0.84f));
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 660f),
+                UITheme.Transparent);
             panel.SetActive(false);
+            var panelImg = panel.GetComponent<Image>();
+            if (panelImg != null)
+            {
+                panelImg.raycastTarget = false;
+            }
+
+            // Beyaz arka plan yalnızca alt bilgi kartında; üstte AR + ana ekran butonu görünür kalır.
+            var sheet = UiBuildKit.CreatePanel(panel.transform, "DrugSheetBg",
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero,
+                UITheme.SheetBackground);
+            sheet.GetComponent<Image>().raycastTarget = true;
+            sheet.transform.SetAsFirstSibling();
 
             var title = UiBuildKit.CreateText(panel.transform, "TitleText",
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(20f, -66f), new Vector2(-20f, -12f),
-                TextAnchor.MiddleLeft, 30, "Seç", UITheme.TextPrimary, bold: true);
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(28f, -92f), new Vector2(-28f, -16f),
+                TextAnchor.MiddleLeft, 38, "Seç", UITheme.TextPrimary, bold: true);
+            AddTextShadow(title.gameObject);
 
             var detail = UiBuildKit.CreateText(panel.transform, "DetailText",
-                new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(20f, 118f), new Vector2(-20f, -72f),
-                TextAnchor.UpperLeft, 21, "", UITheme.TextSecondary);
+                new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(28f, 24f), new Vector2(-28f, -100f),
+                TextAnchor.UpperLeft, 30, "", UITheme.TextPrimary);
+            AddTextShadow(detail.gameObject);
 
             var container = new GameObject("TopicButtons");
             container.transform.SetParent(panel.transform, false);
@@ -363,6 +404,25 @@ namespace LiverAR.EditorTools
 
             // Kontrolcü ayrı, her zaman aktif bir nesnede olmalı: panel kapalıyken
             // panelin üzerindeki bileşenin Update'i çalışmaz ve kendini açamaz.
+            var hintRoot = UiBuildKit.CreatePanel(canvas, "ExploreHint",
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(-460f, 120f), new Vector2(460f, 220f),
+                UITheme.Transparent);
+            hintRoot.SetActive(false);
+            var hintImg = hintRoot.GetComponent<Image>();
+            if (hintImg != null)
+            {
+                hintImg.raycastTarget = false;
+            }
+
+            var hintText = UiBuildKit.CreateText(hintRoot.transform, "HintText",
+                Vector2.zero, Vector2.one, new Vector2(20f, 12f), new Vector2(-20f, -12f),
+                TextAnchor.MiddleCenter, 30,
+                "Karaciğerde istediğin bölgeye dokun",
+                UITheme.TextPrimary, bold: true);
+            hintText.raycastTarget = false;
+            AddTextShadow(hintText.gameObject);
+
             var controllerGo = new GameObject("Drug Region Controller");
             controllerGo.transform.SetParent(canvas, false);
             var controller = controllerGo.AddComponent<DrugRegionController>();
@@ -372,7 +432,22 @@ namespace LiverAR.EditorTools
             UiBuildKit.SetRef(controller, "topicButtonContainer", crt);
             UiBuildKit.SetRef(controller, "titleText", title);
             UiBuildKit.SetRef(controller, "detailText", detail);
-            UiBuildKit.SetFloat(controller, "arrowReferenceSize", 0.15f);
+            UiBuildKit.SetRef(controller, "exploreHintRoot", hintRoot);
+            UiBuildKit.SetFloat(controller, "drugModelScaleFactor", 0.325f);
+            UiBuildKit.SetFloat(controller, "drugArrowReferenceSize", 0.065f);
+            UiBuildKit.SetFloat(controller, "drugArrowLengthScale", 0.36f);
+            UiBuildKit.SetFloat(controller, "drugArrowLabelScale", 0.33f);
+            UiBuildKit.SetFloat(controller, "exploreModelScaleFactor", 0.48f);
+            UiBuildKit.SetFloat(controller, "exploreArrowReferenceSize", 0.10f);
+            UiBuildKit.SetFloat(controller, "exploreArrowLengthScale", 0.55f);
+            UiBuildKit.SetFloat(controller, "exploreArrowLabelScale", 0.65f);
+        }
+
+        private static void AddTextShadow(GameObject go)
+        {
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = UITheme.TextShadow;
+            shadow.effectDistance = new Vector2(2f, -2f);
         }
 
         private static void BuildHomeButton(Transform canvas)
@@ -381,9 +456,7 @@ namespace LiverAR.EditorTools
             navGo.transform.SetParent(canvas, false);
             var nav = navGo.AddComponent<SceneNavigator>();
 
-            UiBuildKit.CreateButton(canvas, "BtnHome", "← Ana ekran",
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -70f), new Vector2(236f, -16f),
-                UITheme.PanelAccent, nav.GoHome, 22);
+            UiBuildKit.CreateHomeBackBar(canvas, "BtnHome", "← Ana ekran", nav.GoHome, 22);
         }
 
         private static LiverAR.Modules.Simulation.Runtime.Data.SimulationState LoadOrCreateState()

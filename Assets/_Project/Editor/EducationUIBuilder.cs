@@ -89,16 +89,19 @@ namespace LiverAR.EditorTools
             {
                 setupGuide = canvas.gameObject.GetComponent<ARSetupGuide>()
                                ?? canvas.gameObject.AddComponent<ARSetupGuide>();
+                // Ana ekran şeridinin altında kalsın.
+                var statusTop = UiBuildKit.HomeBackBarOccupiedHeight + 8f;
                 var statusBg = CreatePanel(canvas, "StatusStrip",
-                    new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -140f), Vector2.zero,
+                    new Vector2(0f, 1f), new Vector2(1f, 1f),
+                    new Vector2(0f, -(statusTop + 118f)), new Vector2(0f, -statusTop),
                     UITheme.Transparent);
                 statusBg.GetComponent<Image>().raycastTarget = false;
                 status = CreateBarText(statusBg.transform, "StatusText", -8f, 120f,
-                    TextAnchor.MiddleCenter, 22, "Cihaz uyumluluğu kontrol ediliyor...", UITheme.TextPrimary,
+                    TextAnchor.MiddleCenter, 24, "Cihaz uyumluluğu kontrol ediliyor...", UITheme.TextPrimary,
                     bold: true, overlayShadow: true);
                 safety = CreateText(canvas, "SafetyText",
                     new Vector2(0.5f, 0f), new Vector2(0.5f, CompactSheetHeight + 6f),
-                    TextAnchor.LowerCenter, 16,
+                    TextAnchor.LowerCenter, 18,
                     "Bu uygulama tanı koymaz; yalnızca eğitim amaçlıdır.", UITheme.TextSecondary);
                 safety.rectTransform.anchorMin = new Vector2(0f, 0f);
                 safety.rectTransform.anchorMax = new Vector2(1f, 0f);
@@ -451,7 +454,7 @@ namespace LiverAR.EditorTools
 
             var fillBg = CreatePanel(healthRow.transform, "HealthBg",
                 new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(8f, -8f), new Vector2(-8f, 8f),
-                compact ? UITheme.OverlayBarTrack : new Color(0.16f, 0.18f, 0.24f, 1f));
+                UITheme.OverlayBarTrack);
             fillBg.GetComponent<Image>().raycastTarget = false;
             var fill = CreatePanel(fillBg.transform, "HealthFill",
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UITheme.HealthGood);
@@ -462,14 +465,14 @@ namespace LiverAR.EditorTools
             fillImg.fillAmount = 1f;
 
             var healthLabel = CreateBarText(healthRow.transform, "HealthLabel", -20f, 30f,
-                TextAnchor.MiddleLeft, compact ? 17 : 22, "Genel durum: %100", UITheme.TextPrimary,
+                TextAnchor.MiddleLeft, compact ? 19 : 22, "Genel durum: %100", UITheme.TextPrimary,
                 overlayShadow: compact);
             healthLabel.rectTransform.offsetMin = new Vector2(10f, healthLabel.rectTransform.offsetMin.y);
             healthLabel.rectTransform.offsetMax = new Vector2(-10f, healthLabel.rectTransform.offsetMax.y);
 
             var labTop = compact ? -72f : -120f;
             var labH = compact ? 30f : 36f;
-            var labSize = compact ? 16 : 20;
+            var labSize = compact ? 18 : 20;
             var ast = CreateBarText(panel.transform, "AST", labTop, labH,
                 TextAnchor.MiddleLeft, labSize, "AST —", UITheme.LabNormal, overlayShadow: compact);
             ast.rectTransform.offsetMin = new Vector2(8f, ast.rectTransform.offsetMin.y);
@@ -489,7 +492,7 @@ namespace LiverAR.EditorTools
             }
 
             var warnText = CreateBarText(warning.transform, "WarnText", -22f, 38f,
-                TextAnchor.MiddleCenter, compact ? 15 : 19, "Uyarı",
+                TextAnchor.MiddleCenter, compact ? 17 : 19, "Uyarı",
                 compact ? UITheme.Danger : UITheme.TextOnDanger, bold: compact, overlayShadow: compact);
 
             var medRoot = CreatePanel(panel.transform, "MedReminder",
@@ -502,7 +505,7 @@ namespace LiverAR.EditorTools
             }
 
             var medLabel = CreateBarText(medRoot.transform, "MedLabel", -20f, 34f,
-                TextAnchor.MiddleLeft, compact ? 15 : 19, "Bugün immünosupresif ilacımı aldım", UITheme.TextPrimary,
+                TextAnchor.MiddleLeft, compact ? 17 : 19, "Bugün immünosupresif ilacımı aldım", UITheme.TextPrimary,
                 overlayShadow: compact);
             medLabel.rectTransform.offsetMin = new Vector2(10f, medLabel.rectTransform.offsetMin.y);
 
@@ -597,7 +600,7 @@ namespace LiverAR.EditorTools
             le.preferredWidth = width;
 
             var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
+            shadow.effectColor = UITheme.TextShadow;
             shadow.effectDistance = new Vector2(0f, -3f);
 
             var img = go.AddComponent<Image>();
@@ -715,7 +718,7 @@ namespace LiverAR.EditorTools
             rt.sizeDelta = new Vector2(w, h);
 
             var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
+            shadow.effectColor = UITheme.TextShadow;
             shadow.effectDistance = new Vector2(0f, -3f);
 
             var img = go.AddComponent<Image>();
@@ -749,7 +752,7 @@ namespace LiverAR.EditorTools
         {
             var panel = CreatePanel(canvas, "SafetyDisclaimerPanel",
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero,
-                new Color(0.02f, 0.04f, 0.08f, 0.98f));
+                UITheme.BackgroundDark);
             CreateAccentBar(panel.transform, 8f, UITheme.Danger);
             var msg = CreateBarText(panel.transform, "DisclaimerText", -200f, 700f,
                 TextAnchor.MiddleCenter, 26, "", UITheme.TextPrimary);
@@ -766,7 +769,7 @@ namespace LiverAR.EditorTools
         {
             var panel = CreatePanel(canvas, "AnatomyIntroPanel",
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero,
-                new Color(0.04f, 0.08f, 0.14f, 0.98f));
+                UITheme.BackgroundDark);
             panel.SetActive(false);
             CreateAccentBar(panel.transform, 8f, UITheme.Success);
             var msg = CreateBarText(panel.transform, "IntroText", -180f, 760f,
@@ -808,7 +811,7 @@ namespace LiverAR.EditorTools
             rt.anchoredPosition = pos;
 
             var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
+            shadow.effectColor = UITheme.TextShadow;
             shadow.effectDistance = new Vector2(0f, -3f);
 
             var img = go.AddComponent<Image>();
@@ -878,7 +881,7 @@ namespace LiverAR.EditorTools
             }
 
             var shadow = text.gameObject.AddComponent<Shadow>();
-            shadow.effectColor = strong ? new Color(0f, 0f, 0f, 0.82f) : new Color(0f, 0f, 0f, 0.5f);
+            shadow.effectColor = strong ? new Color(0f, 0f, 0f, 0.28f) : UITheme.TextShadow;
             shadow.effectDistance = strong ? new Vector2(2f, -2f) : new Vector2(1f, -1f);
         }
 

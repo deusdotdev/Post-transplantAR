@@ -29,10 +29,14 @@ namespace LiverAR.Modules.Visuals.Runtime
         [Tooltip("İşaret küresinin dünya yarıçapı (metre).")]
         [SerializeField] private float markerWorldRadius = 0.01f;
 
-        [SerializeField] private Color highlightColor = new Color(0.15f, 0.78f, 0.72f, 1f);
+        [Tooltip("Dokunma çarpışma yarıçapının görünür yarıçapa oranı (kolay dokunmak için).")]
+        [SerializeField] private float tapRadiusMultiplier = 3f;
+
+        [SerializeField] private Color highlightColor = new Color(0.28f, 0.62f, 0.58f, 1f);
 
         private Transform _markerDot;
         private Renderer _markerRenderer;
+        private SphereCollider _tapCollider;
         private MaterialPropertyBlock _propBlock;
         private bool _highlighted;
 
@@ -59,7 +63,29 @@ namespace LiverAR.Modules.Visuals.Runtime
         {
             _propBlock = new MaterialPropertyBlock();
             EnsureMarkerDot();
+            EnsureTapCollider();
             SetHighlighted(false);
+        }
+
+        /// <summary>
+        /// Bölge gizli olsa bile dokunulabilsin diye, görünür küreden daha geniş bir
+        /// çarpışma küresi ekler. Physics.Raycast bu collider'ı yakalar.
+        /// </summary>
+        private void EnsureTapCollider()
+        {
+            _tapCollider = GetComponent<SphereCollider>();
+            if (_tapCollider == null)
+            {
+                _tapCollider = gameObject.AddComponent<SphereCollider>();
+            }
+
+            _tapCollider.isTrigger = false;
+            _tapCollider.center = Vector3.zero;
+
+            var lossy = transform.lossyScale;
+            var uniform = Mathf.Max(1e-4f, Mathf.Abs(lossy.x));
+            var worldTapRadius = Mathf.Max(markerWorldRadius * Mathf.Max(1f, tapRadiusMultiplier), 0.02f);
+            _tapCollider.radius = worldTapRadius / uniform;
         }
 
         private void EnsureMarkerDot()

@@ -17,13 +17,17 @@ namespace LiverAR.Modules.Visuals.Runtime
         private float _lineWidth = 0.004f;
         private float _headLength = 0.02f;
         private float _headWidth = 0.012f;
+        private float _lengthScale = 1f;
+        private float _labelCharacterScale = 1f;
 
-        public void Initialize(float referenceSize)
+        public void Initialize(float referenceSize, float lengthScale = 1f, float labelCharacterScale = 1f)
         {
+            _lengthScale = Mathf.Clamp(lengthScale, 0.2f, 1f);
+            _labelCharacterScale = Mathf.Max(0.35f, labelCharacterScale);
             // Çizgi/ok ölçüsünü modelin büyüklüğüne göre ayarla.
             _lineWidth = Mathf.Max(0.0015f, referenceSize * 0.02f);
-            _headLength = Mathf.Max(0.008f, referenceSize * 0.10f);
-            _headWidth = Mathf.Max(0.005f, referenceSize * 0.06f);
+            _headLength = Mathf.Max(0.006f, referenceSize * 0.08f);
+            _headWidth = Mathf.Max(0.004f, referenceSize * 0.05f);
 
             EnsureLine();
             EnsureLabel(referenceSize);
@@ -68,7 +72,7 @@ namespace LiverAR.Modules.Visuals.Runtime
             _label.anchor = TextAnchor.MiddleCenter;
             _label.alignment = TextAlignment.Center;
             _label.fontSize = 80;
-            _label.characterSize = Mathf.Max(0.01f, referenceSize * 0.06f);
+            _label.characterSize = Mathf.Max(0.008f, referenceSize * 0.06f * _labelCharacterScale);
             _label.color = Color.white;
             _label.richText = false;
 
@@ -152,11 +156,12 @@ namespace LiverAR.Modules.Visuals.Runtime
 
             var tip = _target.TipWorld;
             var labelAnchor = _target.LabelAnchorWorld;
+            var lineStart = Vector3.Lerp(tip, labelAnchor, _lengthScale);
 
             // Etiketi konumla + kameraya döndür (billboard).
             if (_labelTransform != null)
             {
-                _labelTransform.position = labelAnchor;
+                _labelTransform.position = lineStart;
                 if (_camera != null)
                 {
                     _labelTransform.rotation = Quaternion.LookRotation(
@@ -165,11 +170,11 @@ namespace LiverAR.Modules.Visuals.Runtime
             }
 
             // Ok ucunu (V) kameraya göre düzlemde hesapla.
-            var dir = (tip - labelAnchor);
+            var dir = (tip - lineStart);
             var dist = dir.magnitude;
             if (dist < 1e-4f)
             {
-                _line.SetPosition(0, labelAnchor);
+                _line.SetPosition(0, lineStart);
                 _line.SetPosition(1, tip);
                 _line.SetPosition(2, tip);
                 _line.SetPosition(3, tip);
@@ -189,7 +194,7 @@ namespace LiverAR.Modules.Visuals.Runtime
             var headLeft = headBase + right * _headWidth;
             var headRight = headBase - right * _headWidth;
 
-            _line.SetPosition(0, labelAnchor);
+            _line.SetPosition(0, lineStart);
             _line.SetPosition(1, tip);
             _line.SetPosition(2, headLeft);
             _line.SetPosition(3, headRight);

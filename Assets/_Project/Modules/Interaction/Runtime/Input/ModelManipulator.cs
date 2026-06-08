@@ -38,6 +38,12 @@ namespace LiverAR.Modules.Interaction.Runtime.Input
         private float _previousPinchDistance;
         private float _lastManualRotateTime = -999f;
 
+        /// <summary>Otomatik (turntable) dönüşü açar/kapatır. Keşfet modunda kapatılır.</summary>
+        public void SetAutoRotate(bool value)
+        {
+            enableAutoRotate = value;
+        }
+
         private void Update()
         {
             var target = ResolveTarget();
