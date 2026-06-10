@@ -166,6 +166,14 @@ Assets/_Project/
 
 ---
 
+## Proje belgeleri
+
+| Belge | İçerik |
+|-------|--------|
+| [GEREKSINIM_ANALIZI.md](GEREKSINIM_ANALIZI.md) | İşlevsel / işlevsel olmayan gereksinimler, kullanım senaryoları, kabul kriterleri |
+| [RAMS.md](RAMS.md) | Güvenilirlik, kullanılabilirlik, bakım, güvenlik |
+| [SETUP_ARFOUNDATION_ANDROID_TR.md](SETUP_ARFOUNDATION_ANDROID_TR.md) | AR Foundation kurulum adımları |
+
 ## Geliştirici notları
 
 - Bölge marker konumları `LiverModel.prefab` altındaki `Marker_*` nesnelerinde; model değişince Scene view'da ince ayar gerekebilir.
