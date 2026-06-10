@@ -16,6 +16,8 @@ namespace LiverAR.Modules.Visuals.Runtime
         [Header("Ölçek (iyileşme senaryosu)")]
         [SerializeField] private float minScale = 0.88f;
         [SerializeField] private float maxScale = 1.08f;
+        [SerializeField] private float recoveryMinScale = 0.80f;
+        [SerializeField] private float recoveryMaxScale = 1.06f;
 
         [Header("Ölçek (ilaç senaryosu)")]
         [SerializeField] private float medicationStableScale = 0.94f;
@@ -26,31 +28,39 @@ namespace LiverAR.Modules.Visuals.Runtime
         [Header("Renk")]
         [SerializeField] private Color healthyColor = new Color(0.55f, 0.16f, 0.16f);
         [SerializeField] private Color jaundiceColor = new Color(0.85f, 0.78f, 0.2f);
+        [SerializeField] private Color inflamedColor = new Color(0.42f, 0.14f, 0.12f);
+        [SerializeField] private Color importedHealthyColor = new Color(0.62f, 0.22f, 0.18f);
         [SerializeField] private float colorLerpSpeed = 2f;
+        [SerializeField] private float stepChangeColorSpeed = 9f;
 
         [Header("Şişme (red / ilaç atlama)")]
         [SerializeField] private float swellingAmount = 0.2f;
         [SerializeField] private float swellingSpeed = 3.5f;
+        [SerializeField] private float recoveryEdemaAmount = 0.1f;
 
         private static readonly int ColorId = Shader.PropertyToID("_Color");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         private MaterialPropertyBlock _propBlock;
+        private Renderer[] _liverRenderers;
         private Vector3 _baseScale = Vector3.one;
         private float _currentSwell;
         private bool _useSimulationPalette;
         private bool _lastImmuneAttack;
         private bool _lastAdherent;
         private ScenarioType _lastScenario;
+        private float _lastBilirubin = -1f;
+        private float _lastGrowth = -1f;
+        private float _lastHealth = -1f;
+        private float _activeColorSpeed;
+        private Color _currentTint = Color.white;
+        private bool _drugAdherenceVisualActive;
+        private bool _drugAdherent = true;
 
         private void Awake()
         {
             _propBlock = new MaterialPropertyBlock();
-
-            if (liverRenderer == null)
-            {
-                liverRenderer = GetComponentInChildren<Renderer>();
-            }
+            CacheRenderers();
 
             if (liverTransform == null)
             {
@@ -59,9 +69,71 @@ namespace LiverAR.Modules.Visuals.Runtime
 
             _baseScale = liverTransform.localScale;
             _useSimulationPalette = GetComponentInChildren<LiverMeshGenerator>(true) != null;
-            if (liverRenderer != null)
+            _activeColorSpeed = colorLerpSpeed;
+            _currentTint = ResolveHealthyBaseColor();
+
+            if (_liverRenderers.Length > 0)
             {
                 LiverRenderBootstrap.EnsureVisible(gameObject);
+            }
+        }
+
+        /// <summary>İlaç AR modunda düzenli / atlandı görünümü (ölçeği bozmaz, yalnızca renk).</summary>
+        public void ApplyDrugAdherenceVisual(bool adherent)
+        {
+            _drugAdherenceVisualActive = true;
+            _drugAdherent = adherent;
+            _activeColorSpeed = stepChangeColorSpeed;
+        }
+
+        public void ClearDrugAdherenceVisual()
+        {
+            _drugAdherenceVisualActive = false;
+            _activeColorSpeed = colorLerpSpeed;
+        }
+
+        /// <summary>AR yerleştirme veya pinch sonrası referans ölçeği günceller.</summary>
+        public void CaptureBaseScale()
+        {
+            if (liverTransform != null)
+            {
+                _baseScale = liverTransform.localScale;
+            }
+        }
+
+        /// <summary>Yolculuk adımı değişince görseli anında günceller.</summary>
+        public void ApplyStateNow()
+        {
+            if (state == null || liverTransform == null)
+            {
+                return;
+            }
+
+            DetectMetricTransition(force: true);
+            var growthScale = ResolveGrowthScale();
+            var targetSwell = ResolveTargetSwell();
+            _currentSwell = targetSwell;
+
+            if (ShouldDriveScale())
+            {
+                liverTransform.localScale = _baseScale * (growthScale + targetSwell);
+            }
+
+            _currentTint = ResolveTargetColor();
+            ApplyTintToRenderers(_currentTint);
+        }
+
+        private void CacheRenderers()
+        {
+            if (liverRenderer == null)
+            {
+                liverRenderer = GetComponentInChildren<Renderer>();
+            }
+
+            _liverRenderers = GetComponentsInChildren<Renderer>(true);
+            if (_liverRenderers.Length == 0 && liverRenderer != null)
+            {
+                _liverRenderers = new[] { liverRenderer };
             }
         }
 
@@ -73,6 +145,7 @@ namespace LiverAR.Modules.Visuals.Runtime
             }
 
             DetectStateTransition();
+            DetectMetricTransition(force: false);
             ApplyScale();
             ApplyColor();
         }
@@ -94,7 +167,7 @@ namespace LiverAR.Modules.Visuals.Runtime
 
             if (!immune)
             {
-                _currentSwell = 0f;
+                _currentSwell = Mathf.Min(_currentSwell, swellingAmount * 0.35f);
             }
             else
             {
@@ -102,11 +175,42 @@ namespace LiverAR.Modules.Visuals.Runtime
             }
         }
 
+        private void DetectMetricTransition(bool force)
+        {
+            var metricsChanged = !Mathf.Approximately(state.Bilirubin, _lastBilirubin)
+                                 || !Mathf.Approximately(state.GrowthPercentage, _lastGrowth)
+                                 || !Mathf.Approximately(state.HealthPoints, _lastHealth);
+
+            if (!force && !metricsChanged)
+            {
+                return;
+            }
+
+            _lastBilirubin = state.Bilirubin;
+            _lastGrowth = state.GrowthPercentage;
+            _lastHealth = state.HealthPoints;
+            _activeColorSpeed = force ? stepChangeColorSpeed : colorLerpSpeed;
+        }
+
+        private static bool ShouldDriveScale(ScenarioType scenario)
+        {
+            return scenario == ScenarioType.Recovery || scenario == ScenarioType.Medication;
+        }
+
+        private bool ShouldDriveScale()
+        {
+            return state != null && ShouldDriveScale(state.CurrentScenario);
+        }
+
         private void ApplyScale()
         {
-            var growthScale = ResolveGrowthScale();
+            if (!ShouldDriveScale())
+            {
+                return;
+            }
 
-            var targetSwell = state.ImmuneAttack ? swellingAmount : 0f;
+            var growthScale = ResolveGrowthScale();
+            var targetSwell = ResolveTargetSwell();
             _currentSwell = Mathf.Lerp(_currentSwell, targetSwell, Time.deltaTime * swellingSpeed);
 
             var pulse = state.ImmuneAttack
@@ -117,6 +221,22 @@ namespace LiverAR.Modules.Visuals.Runtime
             var target = _baseScale * factor;
             liverTransform.localScale = Vector3.Lerp(liverTransform.localScale, target,
                 Time.deltaTime * scaleLerpSpeed);
+        }
+
+        private float ResolveTargetSwell()
+        {
+            if (state.ImmuneAttack)
+            {
+                return swellingAmount;
+            }
+
+            if (state.CurrentScenario == ScenarioType.Recovery)
+            {
+                var stress = 1f - Mathf.InverseLerp(65f, 95f, state.HealthPoints);
+                return recoveryEdemaAmount * stress;
+            }
+
+            return 0f;
         }
 
         private float ResolveGrowthScale()
@@ -135,46 +255,86 @@ namespace LiverAR.Modules.Visuals.Runtime
                     Mathf.Max(riskT, growthT * 0.85f));
             }
 
+            if (state.CurrentScenario == ScenarioType.Recovery)
+            {
+                var t = Mathf.InverseLerp(0.5f, 1f, state.GrowthPercentage);
+                return Mathf.Lerp(recoveryMinScale, recoveryMaxScale, t);
+            }
+
             return Mathf.Lerp(minScale, maxScale,
                 Mathf.InverseLerp(0.3f, 1f, state.GrowthPercentage));
         }
 
         private void ApplyColor()
         {
-            if (liverRenderer == null)
+            if (_liverRenderers == null || _liverRenderers.Length == 0)
             {
                 return;
             }
 
-            var jaundice = Mathf.InverseLerp(1.2f, 8f, state.Bilirubin);
+            var target = ResolveTargetColor();
+            _currentTint = Color.Lerp(_currentTint, target, Time.deltaTime * _activeColorSpeed);
+            ApplyTintToRenderers(_currentTint);
 
-            liverRenderer.GetPropertyBlock(_propBlock);
-            Color target;
-            Color current;
-
-            if (_useSimulationPalette)
+            if (_activeColorSpeed > colorLerpSpeed
+                && ColorDistance(_currentTint, target) < 0.01f)
             {
-                target = Color.Lerp(healthyColor, jaundiceColor, jaundice);
-                current = _propBlock.GetColor(BaseColorId);
-                if (current.a <= 0f)
-                {
-                    current = healthyColor;
-                }
+                _activeColorSpeed = colorLerpSpeed;
             }
-            else
+        }
+
+        private void ApplyTintToRenderers(Color color)
+        {
+            for (var i = 0; i < _liverRenderers.Length; i++)
             {
-                target = Color.Lerp(Color.white, jaundiceColor, jaundice * 0.85f);
-                current = _propBlock.GetColor(BaseColorId);
-                if (current.a <= 0f)
+                var renderer = _liverRenderers[i];
+                if (renderer == null)
                 {
-                    current = Color.white;
+                    continue;
                 }
+
+                renderer.GetPropertyBlock(_propBlock);
+                _propBlock.SetColor(ColorId, color);
+                _propBlock.SetColor(BaseColorId, color);
+                renderer.SetPropertyBlock(_propBlock);
+            }
+        }
+
+        private Color ResolveTargetColor()
+        {
+            var healthyBase = ResolveHealthyBaseColor();
+
+            if (_drugAdherenceVisualActive)
+            {
+                if (_drugAdherent)
+                {
+                    return healthyBase;
+                }
+
+                var stressed = Color.Lerp(inflamedColor, jaundiceColor, 0.42f);
+                return Color.Lerp(healthyBase, stressed, 0.72f);
             }
 
-            var next = Color.Lerp(current, target, Time.deltaTime * colorLerpSpeed);
-            _propBlock.SetColor(ColorId, next);
-            _propBlock.SetColor(BaseColorId, next);
-            liverRenderer.SetPropertyBlock(_propBlock);
+            var jaundice = Mathf.InverseLerp(0.8f, 5f, state.Bilirubin);
+            var healthT = Mathf.InverseLerp(62f, 98f, state.HealthPoints);
+            var tinted = Color.Lerp(healthyBase, jaundiceColor, jaundice);
+
+            if (state.CurrentScenario == ScenarioType.Recovery)
+            {
+                tinted = Color.Lerp(inflamedColor, tinted, Mathf.Lerp(0.35f, 1f, healthT));
+            }
+
+            return tinted;
+        }
+
+        private Color ResolveHealthyBaseColor()
+        {
+            return _useSimulationPalette ? healthyColor : importedHealthyColor;
+        }
+
+        private static float ColorDistance(Color a, Color b)
+        {
+            return Mathf.Abs(a.r - b.r) + Mathf.Abs(a.g - b.g) + Mathf.Abs(a.b - b.b);
         }
     }
 }

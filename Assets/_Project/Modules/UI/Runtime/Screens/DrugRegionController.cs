@@ -27,7 +27,10 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         {
             public string Title;
             public string Detail;
+            public string MissedDetail;
+            public DrugInfo Drug;
             public readonly List<TopicItem> Items = new List<TopicItem>();
+            public readonly List<TopicItem> MissedItems = new List<TopicItem>();
         }
 
         [SerializeField] private ARLaunchContext launchContext;
@@ -64,10 +67,24 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         private bool _ready;
         private bool _explore;
         private bool _modelScaled;
+        private bool _adherent = true;
+        private int _selectedTopicIndex;
         private float _pollTimer;
+        private LiverVisualController _liverVisual;
+        private RectTransform _adherenceRow;
+        private Image _adherentButtonImage;
+        private Image _missedButtonImage;
 
         // Keşfet modunda seçili olmayan bölgelerin sönük rengi.
         private static readonly Color ExploreBaseColor = new Color(0.85f, 0.88f, 0.95f, 1f);
+
+        // Alt panel katmanları (px, alt kenardan): ilaçlar → uyum → metin.
+        private const float DrugPanelHeight = 720f;
+        private const float TopicRowBottom = 12f;
+        private const float TopicRowTop = 96f;
+        private const float AdherenceRowBottom = 102f;
+        private const float AdherenceRowTop = 170f;
+        private const float DetailBottomInset = 178f;
 
         private void Awake()
         {
@@ -248,7 +265,9 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             else
             {
                 ApplyDrugPanelStyle();
+                EnsureAdherenceUi();
                 BuildButtons();
+                ResolveLiverVisual();
                 if (panelRoot != null)
                 {
                     panelRoot.SetActive(true);
@@ -294,8 +313,43 @@ namespace LiverAR.Modules.UI.Runtime.Screens
 
             if (detailText != null)
             {
-                detailText.fontSize = 28;
+                detailText.fontSize = 26;
                 detailText.color = UITheme.TextPrimary;
+            }
+
+            ApplyDrugPanelLayout();
+        }
+
+        private void ApplyDrugPanelLayout()
+        {
+            if (panelRoot == null)
+            {
+                return;
+            }
+
+            var panelRt = panelRoot.GetComponent<RectTransform>();
+            if (panelRt != null)
+            {
+                panelRt.offsetMax = new Vector2(panelRt.offsetMax.x, DrugPanelHeight);
+            }
+
+            if (topicButtonContainer != null)
+            {
+                topicButtonContainer.offsetMin = new Vector2(12f, TopicRowBottom);
+                topicButtonContainer.offsetMax = new Vector2(-12f, TopicRowTop);
+            }
+
+            if (_adherenceRow != null)
+            {
+                _adherenceRow.offsetMin = new Vector2(12f, AdherenceRowBottom);
+                _adherenceRow.offsetMax = new Vector2(-12f, AdherenceRowTop);
+            }
+
+            if (detailText != null)
+            {
+                var detailRt = detailText.rectTransform;
+                detailRt.offsetMin = new Vector2(detailRt.offsetMin.x, DetailBottomInset);
+                detailRt.offsetMax = new Vector2(detailRt.offsetMax.x, -96f);
             }
         }
 
@@ -335,7 +389,126 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             }
 
             placement.SpawnedObject.transform.localScale *= factor;
+
+            var visual = placement.SpawnedObject.GetComponent<LiverVisualController>();
+            visual?.CaptureBaseScale();
+            _liverVisual = visual;
+
             _modelScaled = true;
+        }
+
+        private void ResolveLiverVisual()
+        {
+            if (_liverVisual != null)
+            {
+                return;
+            }
+
+            var placement = FindObjectOfType<ARPlacementController>();
+            if (placement != null && placement.HasModel)
+            {
+                _liverVisual = placement.SpawnedObject.GetComponent<LiverVisualController>();
+            }
+        }
+
+        private void EnsureAdherenceUi()
+        {
+            if (panelRoot == null || topicButtonContainer == null)
+            {
+                return;
+            }
+
+            if (_adherenceRow == null)
+            {
+                var rowGo = new GameObject("AdherenceRow");
+                rowGo.transform.SetParent(panelRoot.transform, false);
+                _adherenceRow = rowGo.AddComponent<RectTransform>();
+                _adherenceRow.anchorMin = new Vector2(0f, 0f);
+                _adherenceRow.anchorMax = new Vector2(1f, 0f);
+
+                var layout = rowGo.AddComponent<HorizontalLayoutGroup>();
+                layout.spacing = 8f;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = true;
+                layout.childForceExpandHeight = true;
+
+                _adherentButtonImage = CreateAdherenceButton(rowGo.transform, "✓ Düzenli",
+                    () => SetAdherence(true));
+                _missedButtonImage = CreateAdherenceButton(rowGo.transform, "✗ Atlanırsa",
+                    () => SetAdherence(false));
+                UpdateAdherenceButtonStyles();
+            }
+
+            ApplyDrugPanelLayout();
+        }
+
+        private Image CreateAdherenceButton(Transform parent, string label,
+            UnityEngine.Events.UnityAction action)
+        {
+            var go = new GameObject(label);
+            go.transform.SetParent(parent, false);
+
+            var le = go.AddComponent<LayoutElement>();
+            le.minHeight = 48f;
+            le.preferredHeight = 56f;
+
+            var img = go.AddComponent<Image>();
+            var btn = go.AddComponent<Button>();
+            btn.onClick.AddListener(action);
+
+            var labelGo = new GameObject("Label");
+            labelGo.transform.SetParent(go.transform, false);
+            var rt = labelGo.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(8f, 0f);
+            rt.offsetMax = new Vector2(-8f, 0f);
+
+            var text = labelGo.AddComponent<Text>();
+            text.font = GetFont();
+            text.fontSize = 22;
+            text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = UITheme.TextOnPrimary;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.text = label;
+
+            return img;
+        }
+
+        private void SetAdherence(bool adherent)
+        {
+            if (_adherent == adherent)
+            {
+                return;
+            }
+
+            _adherent = adherent;
+            UpdateAdherenceButtonStyles();
+            if (_selectedTopicIndex >= 0)
+            {
+                SelectTopic(_selectedTopicIndex);
+            }
+        }
+
+        private void UpdateAdherenceButtonStyles()
+        {
+            if (_adherentButtonImage != null)
+            {
+                _adherentButtonImage.color = _adherent ? UITheme.Success : UITheme.PanelAccent;
+            }
+
+            if (_missedButtonImage != null)
+            {
+                _missedButtonImage.color = _adherent ? UITheme.PanelAccent : UITheme.Danger;
+            }
+        }
+
+        private void ApplyLiverAdherenceVisual()
+        {
+            ResolveLiverVisual();
+            _liverVisual?.ApplyDrugAdherenceVisual(_adherent);
         }
 
         /// <summary>Keşfet modu başlangıcı: bölge noktaları görünür, bilgi paneli kapalı.</summary>
@@ -388,10 +561,28 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             {
                 foreach (var drug in DrugRegionLibrary.GetDrugs())
                 {
-                    var topic = new Topic { Title = drug.Name, Detail = drug.Summary };
+                    var topic = new Topic
+                    {
+                        Title = drug.Name,
+                        Detail = drug.Summary,
+                        MissedDetail = drug.MissedSummary ?? drug.Summary,
+                        Drug = drug
+                    };
+
                     foreach (var effect in drug.Effects)
                     {
                         topic.Items.Add(new TopicItem
+                        {
+                            Region = effect.Region,
+                            Text = effect.EffectText,
+                            Positive = effect.Positive
+                        });
+                    }
+
+                    var missed = drug.MissedEffects ?? drug.Effects;
+                    foreach (var effect in missed)
+                    {
+                        topic.MissedItems.Add(new TopicItem
                         {
                             Region = effect.Region,
                             Text = effect.EffectText,
@@ -468,8 +659,8 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             go.transform.SetParent(topicButtonContainer, false);
 
             var le = go.AddComponent<LayoutElement>();
-            le.minHeight = 76f;
-            le.preferredHeight = 88f;
+            le.minHeight = 64f;
+            le.preferredHeight = 72f;
             le.minWidth = 120f;
             le.preferredWidth = 180f;
             le.flexibleWidth = 1f;
@@ -505,6 +696,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
                 return;
             }
 
+            _selectedTopicIndex = index;
             ClearVisuals();
 
             var topic = _topics[index];
@@ -565,37 +757,77 @@ namespace LiverAR.Modules.UI.Runtime.Screens
                 titleText.text = topic.Title;
             }
 
+            var activeItems = _adherent ? topic.Items : GetMissedItems(topic);
+            var summary = _adherent ? topic.Detail : topic.MissedDetail;
+
             if (detailText != null)
             {
                 var sb = new System.Text.StringBuilder();
-                sb.Append(topic.Detail);
-                foreach (var item in topic.Items)
+                sb.Append(summary);
+                foreach (var item in activeItems)
                 {
                     sb.Append("\n\n• ");
                     sb.Append(item.Text);
+                }
+
+                if (!_adherent)
+                {
+                    sb.Append("\n\nAcil şikâyetiniz varsa transplant ekibinize ulaşın.");
                 }
 
                 detailText.text = sb.ToString();
             }
 
             var arrowIndex = 0;
-            foreach (var item in topic.Items)
+            foreach (var item in activeItems)
             {
                 if (!_markers.TryGetValue(item.Region, out var marker) || marker == null)
                 {
                     continue;
                 }
 
-                var color = item.Positive ? UITheme.Primary : UITheme.AccentSecondary;
+                var color = item.Positive ? UITheme.Primary : UITheme.Danger;
                 marker.SetHighlightColor(color);
                 marker.SetHighlighted(true);
 
                 if (arrowIndex < _arrows.Count)
                 {
-                    _arrows[arrowIndex].Show(marker, marker.DisplayName, color, ResolveCamera());
+                    var label = ResolveArrowLabel(topic, item, marker, _adherent);
+                    _arrows[arrowIndex].Show(marker, label, color, ResolveCamera());
                     arrowIndex++;
                 }
             }
+
+            ApplyLiverAdherenceVisual();
+        }
+
+        private static List<TopicItem> GetMissedItems(Topic topic)
+        {
+            return topic.MissedItems.Count > 0 ? topic.MissedItems : topic.Items;
+        }
+
+        private static string ResolveArrowLabel(Topic topic, TopicItem item,
+            LiverRegionMarker marker, bool adherent)
+        {
+            if (adherent)
+            {
+                return marker != null ? marker.DisplayName : "Korunuyor";
+            }
+
+            if (topic.Drug?.MissedEffects == null)
+            {
+                return "Risk ↑";
+            }
+
+            foreach (var effect in topic.Drug.MissedEffects)
+            {
+                if (effect.Region == item.Region && !string.IsNullOrEmpty(effect.ShortLabel))
+                {
+                    return effect.ShortLabel;
+                }
+            }
+
+            return "Risk ↑";
         }
 
         private void ClearVisuals()

@@ -361,7 +361,7 @@ namespace LiverAR.EditorTools
         private static void BuildDrugRegionUI(Transform canvas, ARLaunchContext launch, Camera cam)
         {
             var panel = UiBuildKit.CreatePanel(canvas, "DrugRegionPanel",
-                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 660f),
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 720f),
                 UITheme.Transparent);
             panel.SetActive(false);
             var panelImg = panel.GetComponent<Image>();
@@ -383,8 +383,8 @@ namespace LiverAR.EditorTools
             AddTextShadow(title.gameObject);
 
             var detail = UiBuildKit.CreateText(panel.transform, "DetailText",
-                new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(28f, 24f), new Vector2(-28f, -100f),
-                TextAnchor.UpperLeft, 30, "", UITheme.TextPrimary);
+                new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(28f, 178f), new Vector2(-28f, -96f),
+                TextAnchor.UpperLeft, 26, "", UITheme.TextPrimary);
             AddTextShadow(detail.gameObject);
 
             var container = new GameObject("TopicButtons");
@@ -393,7 +393,7 @@ namespace LiverAR.EditorTools
             crt.anchorMin = new Vector2(0f, 0f);
             crt.anchorMax = new Vector2(1f, 0f);
             crt.offsetMin = new Vector2(12f, 12f);
-            crt.offsetMax = new Vector2(-12f, 104f);
+            crt.offsetMax = new Vector2(-12f, 96f);
 
             var layout = container.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 8f;

@@ -96,7 +96,7 @@ namespace LiverAR.EditorTools
             var hub = hubGo.AddComponent<HomeHubController>();
 
             var homePanel = BuildHomePanel(canvas, hub);
-            var journeyPanel = BuildJourneyPanel(canvas, hub, controller, state);
+            var journeyPanel = BuildJourneyPanel(canvas, hub, controller, state, liver);
             var nutritionPanel = BuildNutritionPanel(canvas, hub);
 
             UiBuildKit.SetRef(hub, "arLaunchContext", launch);
@@ -209,7 +209,7 @@ namespace LiverAR.EditorTools
         }
 
         private static GameObject BuildJourneyPanel(Transform canvas, HomeHubController hub,
-            SimulationController controller, SimulationState state)
+            SimulationController controller, SimulationState state, GameObject liver)
         {
             // Saydam: arkadaki 3B karaciğer görünsün.
             var panel = UiBuildKit.CreatePanel(canvas, "JourneyPanel",
@@ -263,9 +263,12 @@ namespace LiverAR.EditorTools
                 new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-300f, 28f), new Vector2(-24f, 128f),
                 UITheme.Primary, journey.OnNext);
 
+            var liverVisual = liver != null ? liver.GetComponent<LiverVisualController>() : null;
+
             UiBuildKit.SetRef(journey, "controller", controller);
             UiBuildKit.SetRef(journey, "state", state);
             UiBuildKit.SetRef(journey, "dashboard", dashboard);
+            UiBuildKit.SetRef(journey, "liverVisual", liverVisual);
             UiBuildKit.SetRef(journey, "stageText", stage);
             UiBuildKit.SetRef(journey, "titleText", title);
             UiBuildKit.SetRef(journey, "bodyText", body);
@@ -322,7 +325,14 @@ namespace LiverAR.EditorTools
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(LiverPrefabPath);
             if (prefab != null)
             {
-                return (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                var prefabVisual = instance.GetComponent<LiverVisualController>();
+                if (prefabVisual != null)
+                {
+                    UiBuildKit.SetRef(prefabVisual, "state", state);
+                }
+
+                return instance;
             }
 
             var liver = new GameObject("Liver (Procedural)");

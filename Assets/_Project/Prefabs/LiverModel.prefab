@@ -271,14 +271,20 @@ MonoBehaviour:
   liverTransform: {fileID: 5337166398576633011}
   minScale: 0.88
   maxScale: 1.08
+  recoveryMinScale: 0.8
+  recoveryMaxScale: 1.06
   medicationStableScale: 0.94
   medicationRiskScale: 1.14
   scaleLerpSpeed: 5
   healthyColor: {r: 0.55, g: 0.16, b: 0.16, a: 1}
   jaundiceColor: {r: 0.85, g: 0.78, b: 0.2, a: 1}
+  inflamedColor: {r: 0.42, g: 0.14, b: 0.12, a: 1}
+  importedHealthyColor: {r: 0.62, g: 0.22, b: 0.18, a: 1}
   colorLerpSpeed: 2
+  stepChangeColorSpeed: 9
   swellingAmount: 0.2
   swellingSpeed: 3.5
+  recoveryEdemaAmount: 0.1
 --- !u!1001 &8839093992598089767
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using LiverAR.Modules.Education.Runtime;
 using LiverAR.Modules.Simulation.Runtime;
 using LiverAR.Modules.Simulation.Runtime.Data;
+using LiverAR.Modules.Visuals.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         [SerializeField] private SimulationController controller;
         [SerializeField] private SimulationState state;
         [SerializeField] private ClinicalDashboard dashboard;
+        [SerializeField] private LiverVisualController liverVisual;
 
         [Header("Metinler")]
         [SerializeField] private Text stageText;
@@ -32,6 +34,11 @@ namespace LiverAR.Modules.UI.Runtime.Screens
         private void Awake()
         {
             _steps = RecoveryJourneyContent.GetSteps();
+
+            if (liverVisual == null)
+            {
+                liverVisual = FindObjectOfType<LiverVisualController>();
+            }
         }
 
         private void OnEnable()
@@ -78,6 +85,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             if (state != null)
             {
                 state.CurrentScenario = ScenarioType.Recovery;
+                state.SimulationWeek = index + 1;
                 state.IsAdherent = true;
                 state.ImmuneAttack = step.Complication;
                 state.GrowthPercentage = step.Growth;
@@ -118,6 +126,7 @@ namespace LiverAR.Modules.UI.Runtime.Screens
             }
 
             controller?.NotifyStateChanged();
+            liverVisual?.ApplyStateNow();
 
             // Dashboard kapanmış olabilir (senaryo None iken); doğrudan yenile -> yeniden etkinleşir.
             if (dashboard != null)

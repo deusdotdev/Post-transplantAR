@@ -167,6 +167,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
+    Android: com.deusex.posttransplantar
     iPhone: com.deusex.posttransplantar
   buildNumber:
     Standalone: 0

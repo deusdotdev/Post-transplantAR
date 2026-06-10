@@ -7,12 +7,15 @@ namespace LiverAR.Modules.Education.Runtime
     {
         public LiverRegionId Region;
         public string EffectText;
+        public string ShortLabel;
         public bool Positive;
 
-        public DrugRegionEffect(LiverRegionId region, string effectText, bool positive = true)
+        public DrugRegionEffect(LiverRegionId region, string effectText, bool positive = true,
+            string shortLabel = null)
         {
             Region = region;
             EffectText = effectText;
+            ShortLabel = shortLabel;
             Positive = positive;
         }
     }
@@ -21,13 +24,18 @@ namespace LiverAR.Modules.Education.Runtime
     {
         public string Name;
         public string Summary;
+        public string MissedSummary;
         public DrugRegionEffect[] Effects;
+        public DrugRegionEffect[] MissedEffects;
 
-        public DrugInfo(string name, string summary, DrugRegionEffect[] effects)
+        public DrugInfo(string name, string summary, DrugRegionEffect[] effects,
+            string missedSummary = null, DrugRegionEffect[] missedEffects = null)
         {
             Name = name;
             Summary = summary;
             Effects = effects;
+            MissedSummary = missedSummary;
+            MissedEffects = missedEffects;
         }
     }
 
@@ -57,7 +65,7 @@ namespace LiverAR.Modules.Education.Runtime
             {
                 new DrugInfo(
                     "Takrolimus",
-                    "Bağışıklık baskılayıcı. Vücudun nakledilen karaciğere saldırmasını (reddi) önler. " +
+                    "Düzenli alındığında: bağışıklık baskılayıcı olarak grefti korur. " +
                     "Saatinde ve düzenli alınması en kritik ilaçtır.",
                     new[]
                     {
@@ -65,44 +73,90 @@ namespace LiverAR.Modules.Education.Runtime
                             "Greft dokusunu bağışıklık saldırısından korur."),
                         new DrugRegionEffect(LiverRegionId.LeftLobe,
                             "Red riskini azaltarak işlevin sürmesini sağlar.")
+                    },
+                    missedSummary: "Atlanırsa: kan düzeyi düşebilir; akut red riski artabilir. " +
+                                   "Ateş, halsizlik veya karaciğer testlerinde yükselme olursa ekibinize bildirin. " +
+                                   "(Eğitim amaçlı senaryo; tanı koymaz.)",
+                    missedEffects: new[]
+                    {
+                        new DrugRegionEffect(LiverRegionId.RightLobe,
+                            "Bağışıklık bu bölgeye saldırabilir; akut red riski artar.",
+                            positive: false, shortLabel: "Red riski ↑"),
+                        new DrugRegionEffect(LiverRegionId.LeftLobe,
+                            "İşlev düşüşü ve hastaneye yatış gerekebilir.",
+                            positive: false, shortLabel: "İşlev ↓")
                     }),
 
                 new DrugInfo(
                     "Mikofenolat",
-                    "İkinci bir bağışıklık baskılayıcı. Takrolimus ile birlikte reddi önlemeye yardım eder.",
+                    "Düzenli alındığında: takrolimus ile birlikte bağışıklık yanıtını baskılayarak reddi önlemeye yardım eder.",
                     new[]
                     {
                         new DrugRegionEffect(LiverRegionId.LeftLobe,
                             "Bağışıklık yanıtını baskılayarak greft dokusunu destekler.")
+                    },
+                    missedSummary: "Atlanırsa: immün baskılama zayıflar; red ataklarına zemin hazırlanabilir. " +
+                                   "Doz atlamalarını ekibinize bildirin.",
+                    missedEffects: new[]
+                    {
+                        new DrugRegionEffect(LiverRegionId.LeftLobe,
+                            "Greft dokusunda iltihaplanma ve red riski artabilir.",
+                            positive: false, shortLabel: "İltihap riski")
                     }),
 
                 new DrugInfo(
                     "Kortikosteroid",
-                    "Erken dönemde iltihabı azaltır; doz zamanla ekibince düşürülür.",
+                    "Düzenli alındığında: erken dönemde iltihabı azaltır; doz zamanla ekibince düşürülür.",
                     new[]
                     {
                         new DrugRegionEffect(LiverRegionId.RightLobe,
                             "Nakil sonrası iltihaplanmayı baskılar."),
                         new DrugRegionEffect(LiverRegionId.LeftLobe,
                             "Erken red ataklarını yatıştırmaya yardımcı olur.")
+                    },
+                    missedSummary: "Atlanırsa (ekip onayı olmadan): iltihap kontrolü zayıflayabilir; " +
+                                   "red belirtileri alevlenebilir. Doz değişikliğini kendi başınıza yapmayın.",
+                    missedEffects: new[]
+                    {
+                        new DrugRegionEffect(LiverRegionId.RightLobe,
+                            "İltihap baskısı azalır; bölgede hassasiyet artabilir.",
+                            positive: false, shortLabel: "İltihap ↑"),
+                        new DrugRegionEffect(LiverRegionId.LeftLobe,
+                            "Erken red bulguları belirginleşebilir.",
+                            positive: false, shortLabel: "Red riski")
                     }),
 
                 new DrugInfo(
                     "Ursodeoksikolik asit",
-                    "Safra akışını kolaylaştırır ve safra yollarını korur.",
+                    "Düzenli alındığında: safra akışını kolaylaştırır ve safra yollarını korur.",
                     new[]
                     {
                         new DrugRegionEffect(LiverRegionId.BileDuct,
                             "Safranın akışını rahatlatır, tıkanma/sarılık riskini azaltır.")
+                    },
+                    missedSummary: "Atlanırsa: safra akışı zorlaşabilir; sarılık ve kaşıntı riski artabilir.",
+                    missedEffects: new[]
+                    {
+                        new DrugRegionEffect(LiverRegionId.BileDuct,
+                            "Safra birikimi ve sarılık riski artabilir.",
+                            positive: false, shortLabel: "Sarılık riski")
                     }),
 
                 new DrugInfo(
                     "Pıhtı önleyici",
-                    "Damar bağlantısında (anastomoz) pıhtı oluşmasını önleyerek kan akışını sürdürür.",
+                    "Düzenli alındığında: damar bağlantısında pıhtı oluşmasını önleyerek kan akışını sürdürür.",
                     new[]
                     {
                         new DrugRegionEffect(LiverRegionId.VesselInlet,
                             "Damar girişinde pıhtılaşmayı önler, dokunun kanlanmasını korur.")
+                    },
+                    missedSummary: "Atlanırsa: damar girişinde pıhtı riski artabilir; greft kanlanması bozulabilir. " +
+                                   "Kanama veya morarma fark ederseniz acil ekibinize ulaşın.",
+                    missedEffects: new[]
+                    {
+                        new DrugRegionEffect(LiverRegionId.VesselInlet,
+                            "Portal/hepatik akım azalabilir; greft iskemisi riski artar.",
+                            positive: false, shortLabel: "Kan akışı ↓")
                     })
             };
         }

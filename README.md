@@ -1,183 +1,192 @@
-# Post-transplantAR - Karaciğer Nakli Sonrası AR Eğitim Uygulaması
+# Post-transplantAR — Karaciğer Nakli Sonrası Eğitim Uygulaması
 
-Karaciğer nakli olmuş hastanın kendi sürecini tanıması için tasarlanmış, kart bazlı bir eğitim uygulaması. AR isteğe bağlıdır ve yalnızca ilgili karttan açılır.
+Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarlanmış, **kart bazlı** bir mobil eğitim uygulaması. AR yalnızca ilgili kartlardan açılır; ana deneyim AR'siz de tamamlanabilir.
 
-## Proje Amacı
+> **Önemli:** Tüm içerik eğitim amaçlıdır. Tanı koymaz, tedavi önermez. Kişisel kararlar için mutlaka transplant ekibinize danışın.
 
-- Hastanın "nakil sonrası vücudumda/karaciğerimde ne değişiyor?" sorusuna rehberli bir yolculukla yanıt vermek.
-- İlaçların karaciğerin hangi bölgesine etki ettiğini AR'da oklar ve etiketlerle göstermek.
-- Nakil sonrası beslenme için yapılması/kaçınılması gerekenleri sade biçimde sunmak.
-- Tüm içerik eğitim amaçlıdır; tanı koymaz, kişisel kararlar için transplant ekibine danışılmalıdır.
+---
 
-## Ana ekran (kart bazlı)
+## Ne yapar?
 
-Uygulama doğrudan kameraya girmez; bir ana ekranla açılır:
+| Kart | Mod | Özet |
+|------|-----|------|
+| **Nakil sonrası yolculuğum** | AR'sız | 0. gün → 1. hafta → 1. ay → 3. ay → 6–12. ay zaman çizelgesi; her adımda karaciğer rengi/ölçeği + AST/ALT/bilirubin + anlatım |
+| **İlaçlarım nereye etki ediyor?** | AR | Modeli yerleştir, ilaç seç; bölgeden ok + etiket çıkar. **Düzenli / Atlanırsa** geçişi ile greftin nasıl korunduğu veya risk arttığı gösterilir |
+| **Beslenme önerilerim** | AR'sız | Yapılması ve kaçınılması gerekenler, renk kodlu liste |
+| **Karaciğeri keşfet** | AR | Bölgelere dokunarak anatomi bilgisi |
 
-1. **Nakil sonrası yolculuğum** (AR'sız) — 0. gün → 1. hafta → 1. ay → 3. ay → uzun dönem zaman çizelgesi; her adımda karaciğer görseli + klinik değerler + hasta dostu anlatım.
-2. **İlaçlarım nereye etki ediyor? (AR)** — model yerleştirilir, ilaç seçilince ilgili bölgeden ok + etiket çıkar ve bölge parlar.
-3. **Beslenme önerilerim** (AR'sız) — gruplanmış, renk kodlu (yap/kaçın) liste.
-4. **Karaciğeri keşfet (AR)** — bölgeleri AR'da yakından inceleme.
+### Son sürümde eklenenler
 
-## Kapsam
+- Yolculuk ekranında karaciğer görseli adımlara göre değişir (sararma azalır, ölçek büyür).
+- İlaç AR'da **✓ Düzenli** / **✗ Atlanırsa** butonları: metin, ok rengi ve karaciğer tonu birlikte güncellenir.
+- AR'da iki parmakla pinch zoom kalıcıdır (otomatik ölçek geri çekmez).
+- Açık klinik UI teması, kompakt ana ekran geri butonu.
 
-- Kart bazlı ana ekran (`EducationHub` sahnesi, giriş sahnesi)
-- AR yalnızca 2. ve 4. karttan açılır (`ARMain` sahnesi)
-- Bölge çapaları + ok/etiket görselleştirmesi (tek mesh üzerinde, alt-mesh ayrımı gerektirmez)
-- Android (ARCore) ve iOS (ARKit) desteği
+---
 
-## Teknoloji Yığını
+## Gereksinimler
 
-- Unity (önerilen: 2022.3 LTS)
-- AR Foundation
-- ARCore XR Plugin (Android)
-- ARKit XR Plugin (iOS)
-- C#
+| Bileşen | Sürüm / not |
+|---------|-------------|
+| **Unity** | 2022.3 LTS (proje: `2022.3.62f3`) |
+| **Modüller** | Android Build Support, iOS Build Support (Xcode için Mac) |
+| **XR** | AR Foundation + ARCore (Android) + ARKit (iOS) — `Packages/manifest.json` içinde tanımlı |
+| **Cihaz** | AR destekli telefon/tablet (ARKit veya ARCore) |
 
-## Güncel Proje Yapısı
+---
+
+## Hızlı kurulum (yeni gelen biri için)
+
+### 1. Repoyu al
+
+```bash
+git clone <repo-url>
+cd GüncelKonularKaraciğer   # veya klonladığınız klasör adı
+```
+
+### 2. Unity ile aç
+
+1. [Unity Hub](https://unity.com/download) → **Add** → proje klasörünü seç.
+2. Editor **2022.3.x LTS** yoksa Hub üzerinden aynı majör sürümü kur.
+3. İlk açılışta paketlerin indirilmesini bekle (AR Foundation, glTFast vb.).
+
+### 3. XR ayarları (bir kez)
+
+1. **Edit → Project Settings → XR Plug-in Management**
+2. **Android** sekmesi → **ARCore** işaretle.
+3. **iOS** sekmesi → **ARKit** işaretle.
+
+### 4. Sahne ve asset'leri otomatik kur
+
+Unity üst menüsünden sırayla çalıştır (**Play modu kapalı olmalı**):
+
+```
+Post-transplantAR → Build AR Scene
+Post-transplantAR → Build Home Hub
+```
+
+Bu komutlar:
+
+- `EducationHub` (ana ekran, build index **0**) ve `ARMain` sahnelerini kurar/günceller.
+- `SimulationState.asset`, `ARLaunchContext.asset`, `LiverModel.prefab` üretir veya yeniler.
+
+### 5. Editörde test
+
+1. **File → Build Settings** → `EducationHub` index 0 olduğunu doğrula.
+2. **Play** → ana ekranda 4 kartı dene.
+3. AR kartları için Editör'de AR tam çalışmayabilir; gerçek test **fiziksel cihaz** ile yapılır.
+
+### 6. iOS build (Mac + Xcode)
+
+```
+Post-transplantAR → Build → iOS (Xcode Project)
+```
+
+1. Çıktı: `Builds/iOS/`
+2. `Unity-iPhone.xcodeproj` aç → **Signing & Capabilities** → Team seç.
+3. iPhone'a **Run**.
+
+### 7. Android build
+
+```
+Post-transplantAR → Build → Android (APK)
+```
+
+Çıktı: `Builds/Android/PostTransplantAR.apk`
+
+---
+
+## 3B karaciğer modeli
+
+**Varsayılan:** `Assets/_Project/Models/humans_liver.glb` (Sketchfab, CC Attribution).
+
+Model değiştirmek için:
+
+1. `.glb` veya `.fbx` dosyasını `Assets/_Project/Models/` altına koy.
+2. Menü: **Post-transplantAR → Reimport Models Folder** (GLB için).
+3. Menü: **Post-transplantAR → Import Liver Model**.
+4. **Build AR Scene** ve **Build Home Hub** yeniden çalıştır.
+
+Procedural yedek model (`LiverMeshGenerator`) harici dosya olmadan da çalışır.
+
+---
+
+## Proje yapısı
 
 ```text
 Assets/_Project/
-├── Bootstrap/
-│   ├── SceneBootstrap.cs
-│   └── ARExperienceCoordinator.cs
-└── Modules/
-    ├── AR/
-    │   └── Runtime/Controllers/
-    │       ├── ARSessionController.cs
-    │       ├── PlaneDetectionMonitor.cs
-    │       └── ARPlacementController.cs
-    ├── Interaction/
-    │   └── Runtime/Input/
-    │       ├── TapToPlaceInput.cs
-    │       └── ModelManipulator.cs
-    ├── Simulation/
-    │   └── Runtime/ (SimulationState, SimulationController)
-    ├── Visuals/
-    │   └── Runtime/ (LiverVisualController, LiverMeshGenerator)
-    └── UI/
-        └── Runtime/
-            ├── Theme/UITheme.cs
-            └── Screens/
-                ├── ARSetupGuide.cs
-                ├── SafetyDisclaimerScreen.cs
-                ├── AnatomyIntroScreen.cs
-                ├── EducationFlowController.cs
-                ├── ClinicalDashboard.cs
-                ├── ScenarioHUD.cs
-                └── LiverAnatomyInfoPanel.cs
+├── Editor/
+│   ├── HomeHubBuilder.cs      # Ana ekran (4 kart) kurucu
+│   ├── ARSceneBuilder.cs      # AR sahnesi kurucu
+│   ├── MobileBuildPipeline.cs # iOS / Android build menüsü
+│   └── LiverModelImporter.cs
+├── Modules/
+│   ├── Education/Runtime/     # İçerik: yolculuk, ilaç, beslenme
+│   ├── AR/Runtime/            # Yerleştirme, plane, session
+│   ├── Interaction/Runtime/   # Dokunma, döndürme, pinch
+│   ├── Simulation/Runtime/    # SimulationState, senaryo mantığı
+│   ├── Visuals/Runtime/       # Karaciğer görseli, bölge okları
+│   └── UI/Runtime/            # Ekranlar, tema
+├── Scenes/
+│   ├── EducationHub.unity     # Giriş sahnesi
+│   └── ARMain.unity           # AR sahnesi
+├── Models/                    # humans_liver.glb
+├── Prefabs/LiverModel.prefab  # Bölge marker'ları gömülü
+└── SimulationState.asset
 ```
 
-## Modül Sorumlulukları
+### Önemli script'ler
 
-- `AR`:
-  - `ARSessionController`: cihaz AR uyumluluğu kontrolü, oturum yaşam döngüsü, desteklenmeyen cihazda durum bildirimi (Availability)
-  - `PlaneDetectionMonitor`: algılanan düzlemleri izler, yerleştirme uygunluğunu raporlar (Reliability)
-  - `ARPlacementController`: raycast ile 3D model yerleştirme/yeniden konumlandırma, gating ve event'ler
-- `Interaction`:
-  - `TapToPlaceInput`: tek parmak dokunuşuyla yerleştirme
-  - `ModelManipulator`: tek parmak döndürme, iki parmak (pinch) ölçekleme
-- `UI`:
-  - `ARSetupGuide`: durum/yönlendirme metinleri + kalıcı "tanı koymaz" güvenlik satırı
-  - `SafetyDisclaimerScreen`: ilk kullanımda onay gerektiren sorumluluk reddi ekranı (Safety)
-- `Bootstrap`:
-  - `SceneBootstrap`: kare hızı, vSync ve ekran uyuma ayarları
-  - `ARExperienceCoordinator`: modülleri birbirine bağlayan merkezi akış (Maintainability)
-- `Simulation` / `Visuals` / `UI`:
-  - `EducationFlowController`: güvenlik uyarısı → anatomi girişi → eğitim paneli
-  - `ClinicalDashboard`: sağlık çubuğu, klinik değerler, uyarı bandı, red detay kutuları
-  - `LiverAnatomyInfoPanel`: sağ/sol lob ve safra bilgi kartları (README bilgi noktaları)
-  - `ScenarioHUD`: iki senaryo ve aksiyon butonları
+| Script | Görev |
+|--------|--------|
+| `HomeHubController` | Kart yönlendirme, AR modu seçimi |
+| `RecoveryJourneyController` | Yolculuk adımları + görsel tetikleme |
+| `DrugRegionController` | İlaç/bölge AR, düzenli-atlandı UI |
+| `LiverVisualController` | Ölçek, sararma, ilaç uyumu rengi |
+| `LiverRegionMarker` | Bölge parlama noktaları |
+| `RegionAnnotationArrow` | Ok + 3B etiket |
 
-## Çalışma Akışı
+---
 
-Ana ekran (`HomeHubController`):
-1. Uygulama `EducationHub` sahnesiyle açılır; 4 kart gösterilir.
-2. **Yolculuk** kartı: `RecoveryJourneyController` adım adım `SimulationState`'i günceller; `LiverVisualController` görseli (sararma/şişme/ölçek) ve `ClinicalDashboard` klinik değerleri yansıtır.
-3. **Beslenme** kartı: `NutritionController` içeriği `NutritionLibrary`'den doldurur.
-4. **AR kartları**: `HomeHubController` `ARLaunchContext.CurrentMode`'u (DrugRegion / ExploreAnatomy) yazar ve `ARMain` sahnesini yükler.
+## Çalışma akışı (özet)
 
-AR sahnesi (`ARMain`):
-1. `SafetyDisclaimerScreen` → `AnatomyIntroScreen` (kısa giriş).
-2. `ARSessionController` cihaz uyumluluğunu, `PlaneDetectionMonitor` düz yüzeyi kontrol eder.
-3. Kullanıcı dokunur → `ARPlacementController` modeli yerleştirir (bölge çapaları modelde gömülüdür).
-4. `DrugRegionController` modeli görünce paneli açar: moda göre ilaç ya da bölge listesi; seçince `LiverRegionMarker` parlar ve `RegionAnnotationArrow` ok + etiket çizer.
-5. `← Ana ekran` butonu (`SceneNavigator`) `EducationHub`'a döner.
+**Ana ekran (`EducationHub`):**
 
-## Simülasyon ve Görsel Katman (Senaryo Sistemi)
+1. Uygulama 4 kartla açılır.
+2. **Yolculuk:** `RecoveryJourneyController` her adımda `SimulationState` günceller → karaciğer + dashboard yenilenir.
+3. **Beslenme:** `NutritionController` + `NutritionLibrary`.
+4. **AR kartları:** `ARLaunchContext` modu yazılır → `ARMain` yüklenir.
 
-LiverTransplantAR örneğinden esinlenilen, veri-merkezli senaryo sistemi:
+**AR (`ARMain`):**
 
-- `Modules/Simulation/Runtime/Data/SimulationState.cs` — `ScriptableObject` tek doğruluk kaynağı (büyüme, sağlık, AST/ALT/Bilirubin, ilaç uyumu)
-- `Modules/Simulation/Runtime/SimulationController.cs` — senaryo mantığı; **event-driven** (`StateChanged`), her frame string üretmez
-- `Modules/Visuals/Runtime/LiverVisualController.cs` — veriyi görsele bağlar (büyüme→ölçek, bilirubin→sararma, bağışıklık→şişme, fibrozis→koyulaşma, yağlı diyet→steatoz tonu). `MaterialPropertyBlock` kullanır, özel shader gerektirmez
-- `Modules/Visuals/Runtime/LiverMeshGenerator.cs` — karaciğeri **koddan üretir** (iki loblu); dış 3B model/lisans gerektirmez
-- `Modules/UI/Runtime/Screens/ScenarioHUD.cs` — başlık/açıklama/klinik metin + buton aksiyonları
+1. Düz yüzeye dokun → karaciğer yerleşir.
+2. **İlaç modu:** ilaç seç, düzenli/atlandı geçişi yap; bölgeler parlar, oklar çıkar.
+3. **Keşfet modu:** bölgeye dokun → bilgi paneli.
+4. **← Ana ekran** ile hub'a dön.
 
-Senaryolar:
-- **Onarım** — haftalık rejenerasyon (büyüme + klinik değerlerin normalleşmesi)
-- **İlaç Uyumu** — düzenli/aksatma dallanması (aksatınca bağışıklık saldırısı, sararma, şişme)
+---
 
-## Editor Komutları (otomatik kurulum)
+## Geliştirici notları
 
-Üst menü `Post-transplantAR`:
+- Bölge marker konumları `LiverModel.prefab` altındaki `Marker_*` nesnelerinde; model değişince Scene view'da ince ayar gerekebilir.
+- `Build Home Hub` çalıştırmadan sahne layout'u güncel olmayabilir; UI değişikliklerinden sonra menüyü yeniden çalıştır.
+- İlaç paneli layout'u runtime'da da düzeltilir; yine de **Build AR Scene** önerilir.
+- Ek AR kurulum detayı: [SETUP_ARFOUNDATION_ANDROID_TR.md](SETUP_ARFOUNDATION_ANDROID_TR.md)
 
-- **Build Home Hub** — kart bazlı ana ekran (`EducationHub`); giriş sahnesi yapılır (build index 0). Yolculuk ve beslenme bu sahnededir.
-- **Build AR Scene** — AR sahnesi (`ARMain`); ilaç→bölge ve keşif modları. Liver prefab'ına bölge çapalarını ekler.
-- **Build Simulation Preview (No AR)** — eski, AR'sız senaryo önizlemesi (geliştirici testi için).
+---
 
-Önerilen kurulum sırası: önce **Build AR Scene**, sonra **Build Home Hub** (böylece her iki sahne de build ayarlarına eklenir, `EducationHub` index 0 olur).
+## Lisans ve atıflar
 
-Komutlar gerektiğinde şu asset'leri otomatik üretir: `SimulationState.asset`, `ARLaunchContext.asset`, `Materials/LiverMaterial.mat`, `Prefabs/LiverModel.prefab`.
+### 3B model
 
-## Yeni modüller (bu sürüm)
+- **Human's Liver** — Sketchfab, [CC Attribution](https://creativecommons.org/licenses/by/4.0/). Dosya: `Assets/_Project/Models/humans_liver.glb`. Model sahibine README ve uygulama içinde atıf verilmelidir.
 
-- `Modules/Education/Runtime/`: `ARLaunchContext` (sahne yönlendirme), `RecoveryJourneyContent` (yolculuk adımları), `DrugRegionLibrary` (ilaç→bölge + bölge metinleri), `NutritionLibrary` (beslenme).
-- `Modules/UI/Runtime/Screens/`: `HomeHubController`, `RecoveryJourneyController`, `DrugRegionController`, `NutritionController`, `SceneNavigator`.
-- `Modules/Visuals/Runtime/`: `LiverRegionMarker` (bölge çapası + parlama), `RegionAnnotationArrow` (ok + dünya-uzayı etiket).
-- `Editor/`: `HomeHubBuilder` (ana ekran kurucu), `UiBuildKit` (ortak uGUI yardımcıları).
+### Alternatif ücretsiz kaynaklar
 
-> Bölge çapalarının konumu, kullanılan karaciğer modeline göre Scene view'da elle ince ayar gerektirebilir (çapalar `LiverModel.prefab` altında görünür `Marker_*` nesneleridir).
+- [NIH 3D — Liver, Female (GLB)](https://3d.nih.gov/entries/3DPX-020973) — tıbbi referans anatomi
 
-## 3B Model
+---
 
-İki seçenek desteklenir:
+## Sorumluluk reddi
 
-1. **Procedural (varsayılan):** Karaciğer koddan üretilir (`LiverMeshGenerator`); dış dosya/lisans gerekmez.
-2. **Gerçek model (önerilen görünüm):** Sketchfab/NIH 3D'den CC lisanslı `.fbx` veya `.glb` indirilir.
-   - İndirilen dosya `Assets/_Project/Models/` klasörüne bırakılır.
-   - `.glb` için `com.unity.cloud.gltfast` (6.12.0) gerekir; paket yüklenince **`Post-transplantAR > Reimport Models Folder`** sonra **`Import Liver Model`** çalıştırılır.
-   - GLB import olmazsa menü **procedural** karaciğer prefab'ı oluşturur (AR yine çalışır). `.fbx` en sorunsuz seçenektir.
-   - Araç modeli AR için ~18 cm'e ölçekler, `LiverVisualController` ile bağlar ve `Prefabs/LiverModel.prefab` olarak kaydeder.
-   - Her iki sahne kurucusu (AR + Preview) prefab varsa otomatik onu kullanır.
-   - CC Attribution lisansı için model sahibine künyede atıf verilmelidir.
-
-## Sahne Kurulumu (Inspector Bağlantıları)
-
-Tek sahnede şu GameObject'leri kurup script'leri bağlayın:
-
-- `XR Origin (AR)` üzerine: `ARRaycastManager`, `ARPlaneManager` (+ `PlaneDetectionMonitor`)
-- `AR Session` üzerine: `ARSession` (+ `ARSessionController` referansı)
-- Boş `Coordinator` objesi: `ARExperienceCoordinator` — tüm referansları buraya bağlayın
-- Boş `Input` objesi: `TapToPlaceInput`, `ModelManipulator` (her ikisinde `ARPlacementController` referansı)
-- Canvas: `ARSetupGuide` (statusText + safetyText) ve `SafetyDisclaimerScreen` (panel + buton)
-
-## Kurulum
-
-Detaylar için: `SETUP_ARFOUNDATION_ANDROID_TR.md`
-
-Kısa özet:
-- Unity Hub ile editor + Android/iOS modüllerini kur
-- Projeyi Unity ile aç
-- XR Plug-in Management içinde Android için ARCore, iOS için ARKit aç
-- Sahneye `AR Session` ve `XR Origin (AR)` ekle
-- `AR Plane Manager` ve `AR Raycast Manager` bileşenlerini bağla
-
-## Credits (Model Atıfları)
-
-- Karaciğer 3B modeli (`Assets/_Project/Models/humans_liver.glb`): "Human's Liver", Sketchfab üzerinden CC Attribution lisansıyla. Kullanılan modelin sahibine ve lisansına bağlı kalınmalıdır.
-
-> Not: Farklı bir model kullanılırsa bu bölüm güncellenmeli; CC Attribution gereği model sahibinin adı ve kaynak bağlantısı eklenmelidir.
-
-## Not
-
-Bu sürüm yalnızca AR eğitim kapsamındadır.
+Bu yazılım yalnızca **hasta eğitimi** içindir. Acil şikâyetlerde ve ilaç/beslenme kararlarında transplant ekibinize başvurun.
