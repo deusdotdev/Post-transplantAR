@@ -34,7 +34,7 @@ Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarl
 ### 1. Repoyu al
 
 ```bash
-git clone <repo-url>
+git clone git@github.com:deusdotdev/Post-transplantAR.git
 cd GüncelKonularKaraciğer   # veya klonladığınız klasör adı
 ```
 
