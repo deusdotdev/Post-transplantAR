@@ -168,10 +168,25 @@ Assets/_Project/
 
 ## Proje belgeleri
 
+### Akademik teslim (`/docs`)
+
+| PDF | İçerik | Puan |
+|-----|--------|------|
+| [docs/SWOT.pdf](docs/SWOT.pdf) | SWOT analizi | 10 |
+| [docs/RAMS.pdf](docs/RAMS.pdf) | RAMS raporu | 5 |
+| [docs/THS_report.pdf](docs/THS_report.pdf) | Teknoloji Hazırlık Seviyesi (kullanıma hazırlık) | 5 |
+| [docs/Requirements.pdf](docs/Requirements.pdf) | Gereksinim analizi | 5 |
+| [docs/UserScenario.pdf](docs/UserScenario.pdf) | Kullanım senaryoları | 5 |
+
+Detay: [docs/README.md](docs/README.md)
+
+### Geliştirme kaynakları
+
 | Belge | İçerik |
 |-------|--------|
 | [GEREKSINIM_ANALIZI.md](GEREKSINIM_ANALIZI.md) | İşlevsel / işlevsel olmayan gereksinimler, kullanım senaryoları, kabul kriterleri |
 | [RAMS.md](RAMS.md) | Güvenilirlik, kullanılabilirlik, bakım, güvenlik |
+| [swot.md](swot.md) | SWOT analizi (kaynak) |
 | [SETUP_ARFOUNDATION_ANDROID_TR.md](SETUP_ARFOUNDATION_ANDROID_TR.md) | AR Foundation kurulum adımları |
 
 ## Geliştirici notları
