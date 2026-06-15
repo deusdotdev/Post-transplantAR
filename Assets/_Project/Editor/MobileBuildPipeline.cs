@@ -87,6 +87,7 @@ namespace LiverAR.EditorTools
         {
             Directory.CreateDirectory(Path.GetDirectoryName(AndroidApkPath)!);
             EnsureScenesInBuild();
+            EnsureAndroidInputHandling();
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.deusex.posttransplantar");
 
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
@@ -109,6 +110,31 @@ namespace LiverAR.EditorTools
                 EditorUtility.DisplayDialog("APK hazır", Path.GetFullPath(AndroidApkPath), "Tamam");
                 EditorUtility.RevealInFinder(Path.GetDirectoryName(AndroidApkPath));
             }
+        }
+
+        private static void EnsureAndroidInputHandling()
+        {
+            // Input System paketi yokken ActiveInputHandler enum'u derlenmez; ProjectSettings.asset üzerinden ayarla.
+            // 0 = Input Manager (Old), 1 = Input System Package, 2 = Both (Android'de desteklenmez)
+            const int inputManagerOld = 0;
+
+            var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (assets == null || assets.Length == 0)
+            {
+                return;
+            }
+
+            var settings = new SerializedObject(assets[0]);
+            var property = settings.FindProperty("activeInputHandler");
+            if (property == null || property.intValue == inputManagerOld)
+            {
+                return;
+            }
+
+            Debug.LogWarning(
+                "[MobileBuild] Active Input Handling Android için Input Manager (Old) olarak ayarlanıyor.");
+            property.intValue = inputManagerOld;
+            settings.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void EnsureScenesInBuild()

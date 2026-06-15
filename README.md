@@ -6,6 +6,36 @@ Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarl
 
 ---
 
+## APK indir (Android)
+
+**Doğrudan indirme linki:** [GitHub Releases](https://github.com/deusdotdev/Post-transplantAR/releases/latest) → `PostTransplantAR.apk` dosyasını indir.
+
+> APK repoya commit edilmez (`Builds/` gitignore'da). Hocanın belirttiği **“APK doğrudan indirilemiyor”** hatasının nedeni genelde release oluşturulmaması veya README'de çalışmayan bir link verilmesidir. APK **GitHub Release** eki olarak yüklenmelidir.
+
+### Telefona kurulum
+
+1. İndirilen `.apk` dosyasına dokun (Chrome bazen “zararlı olabilir” uyarısı verir — **Yine de indir / Yine de yükle**).
+2. **Ayarlar → Güvenlik → Bilinmeyen uygulamalar** (veya kurulum sırasında çıkan izin) ile tarayıcıya/Drive'a kurulum izni ver.
+3. AR destekli Android cihazda **Google Play Services for AR (ARCore)** yüklü olsun.
+4. Uygulama açılmazsa: Android 8+ (API 26+) ve ARCore destekli cihaz kullanın.
+
+### Release oluşturma (geliştirici)
+
+Unity'de APK üret → GitHub'da Release aç → APK'yı asset olarak ekle:
+
+```bash
+# 1) Unity menü: Post-transplantAR → Build → Android (APK)
+#    Çıktı: Builds/Android/PostTransplantAR.apk
+
+# 2) GitHub → Releases → Draft a new release
+#    Tag: v1.0.0  |  Title: v1.0.0 — Android APK
+#    Asset olarak PostTransplantAR.apk yükle → Publish release
+```
+
+Release notlarına kısaca: test edilen cihaz, Unity sürümü, bilinen sorunlar.
+
+---
+
 ## Ne yapar?
 
 | Senaryo | Mod | Özet |
