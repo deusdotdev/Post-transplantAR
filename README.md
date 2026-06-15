@@ -1,6 +1,6 @@
 # Post-transplantAR — Karaciğer Nakli Sonrası Eğitim Uygulaması
 
-Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarlanmış, **kart bazlı** bir mobil eğitim uygulaması. AR yalnızca ilgili kartlardan açılır; ana deneyim AR'siz de tamamlanabilir.
+Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarlanmış, **kart bazlı** bir mobil **Arttırılmış Gerçeklik** eğitim uygulaması. 
 
 > **Önemli:** Tüm içerik eğitim amaçlıdır. Tanı koymaz, tedavi önermez. Kişisel kararlar için mutlaka transplant ekibinize danışın.
 
@@ -15,12 +15,6 @@ Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarl
 | **Beslenme önerilerim** | AR'sız | Yapılması ve kaçınılması gerekenler, renk kodlu liste |
 | **Karaciğeri keşfet** | AR | Bölgelere dokunarak anatomi bilgisi |
 
-### Son sürümde eklenenler
-
-- Yolculuk ekranında karaciğer görseli adımlara göre değişir (sararma azalır, ölçek büyür).
-- İlaç AR'da **✓ Düzenli** / **✗ Atlanırsa** butonları: metin, ok rengi ve karaciğer tonu birlikte güncellenir.
-- AR'da iki parmakla pinch zoom kalıcıdır (otomatik ölçek geri çekmez).
-- Açık klinik UI teması, kompakt ana ekran geri butonu.
 
 ---
 
