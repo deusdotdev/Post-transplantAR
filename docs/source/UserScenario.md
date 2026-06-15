@@ -10,6 +10,8 @@
 
 Bu belge, Post-transplantAR uygulamasının hedef kullanıcıları, temel kullanım akışlarını ve başarı kriterlerini tanımlar. Senaryolar test, demo ve akademik değerlendirme için referans niteliğindedir.
 
+**Kapsam notu:** Uygulama push bildirim, ilaç saati hatırlatıcı, alarm veya doz takibi **sunmaz**. İlaç modülündeki «✓ Düzenli / ✗ Atlanırsa» geçişi yalnızca **eğitim amaçlı görsel senaryo** gösterir; gerçek ilaç programını yönetmez.
+
 ---
 
 ## 2. Kullanıcı profilleri (persona)
@@ -18,14 +20,14 @@ Bu belge, Post-transplantAR uygulamasının hedef kullanıcıları, temel kullan
 
 - Nakilden 3 hafta sonra; evde iyileşiyor.
 - Akıllı telefon kullanabiliyor; AR deneyimi yok.
-- İlaç saatlerini karıştırma korkusu var.
-- **Hedef:** Sürecini anlamak, ilaçların ne işe yaradığını görmek.
+- İlaçların ne işe yaradığını görsel olarak öğrenmek istiyor.
+- **Hedef:** Sürecini anlamak, AR'de ilaç–bölge eşlemesini incelemek.
 
 ### Persona B — Mehmet (61, hasta yakını / eş)
 
-- Hastanın ilaçlarını hatırlatıyor.
-- AR ile model üzerinde gösterim istiyor.
-- **Hedef:** Eşine basit dille anlatmak için görsel destek.
+- Eşinin tedavi sürecini destekliyor.
+- AR model üzerinde basit anlatım yapmak istiyor.
+- **Hedef:** Uygulamadaki görsel ve metinlerle eşine eğitim desteği vermek.
 
 ### Persona C — Hemşire Elif (transplant eğitim hemşiresi)
 
@@ -83,8 +85,8 @@ Bu belge, Post-transplantAR uygulamasının hedef kullanıcıları, temel kullan
 2. «Düz bir yüzeye bakın» yönlendirmesini okur.
 3. Düzlem algılanınca ekrana dokunarak karaciğer modelini yerleştirir.
 4. Alttaki ilaç listesinden **Takrolimus** seçer.
-5. **✓ Düzenli** modda: yeşil ok, koruyucu metin, sağlıklı karaciğer tonu görür.
-6. **✗ Atlanırsa** moda geçer: kırmızı uyarı, risk metni, karaciğer tonu değişir.
+5. **✓ Düzenli** modda: yeşil ok, koruyucu metin, sağlıklı karaciğer tonu görür (eğitim senaryosu; gerçek ilaç kaydı değil).
+6. **✗ Atlanırsa** moda geçer: kırmızı uyarı, risk metni, karaciğer tonu değişir (yine yalnızca eğitim amaçlı).
 7. Modeli iki parmakla büyütür; ölçek sabit kalır.
 8. Başka ilaç seçerek farklı bölgeleri inceler.
 
@@ -101,7 +103,7 @@ Bu belge, Post-transplantAR uygulamasının hedef kullanıcıları, temel kullan
 
 ### Güvenlik notu
 
-- Atlanırsa metninde «ekibinize başvurun» hatırlatması görünür.
+- Atlanırsa metninde «ekibinize başvurun» uyarı metni görünür.
 - Uygulama doz veya tedavi değişikliği önermez.
 
 ---

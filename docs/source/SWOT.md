@@ -4,7 +4,7 @@
 - AR destekli eğitim ile hastanın ameliyat sonrası süreci daha iyi anlaması.
 - Modüler Unity mimarisi sayesinde AR, UI, sağlık mantığı ve veri katmanlarının ayrı geliştirilebilmesi.
 - Hasta dostu ve sade UX ile teknik bilgisi düşük kullanıcıların da uygulamayı rahat kullanabilmesi.
-- İlaç uyumu senaryosunda günlük hatırlatıcı (toggle) ile tedaviye uyumun desteklenmesi.
+- İlaç AR modülünde **Düzenli / Atlanırsa** eğitim senaryosu ile ilaç uyumunun görsel olarak anlatılması.
 - Cihaz üzerinde çalışabilen yerel veri yapısı ile hızlı ve kesintisiz kullanım.
 
 ## Weaknesses (Zayıf Yönler)
@@ -15,8 +15,8 @@
 - AR oturumu ve 3D model işlemleri uzun kullanımda batarya tüketimini artırabilir.
 
 ## Opportunities (Fırsatlar)
-- Hastane ve transplant merkezleriyle entegrasyon yapılarak taburculuk sonrası destek paketi haline getirilebilir.
-- Hekim ve hemşire ekiplerine özet raporlama sunularak takip kalitesi artırılabilir.
+- Gelecekte hastane ve transplant merkezleriyle entegrasyon yapılarak taburculuk sonrası destek paketi haline getirilebilir.
+- Gelecekte hekim ve hemşire ekiplerine anonim kullanım özeti sunulabilir (mevcut sürümde yok).
 - Çoklu dil desteği ile farklı hasta gruplarına ulaşılabilir.
 - Giyilebilir cihaz veya uzaktan izlem sistemleriyle entegrasyon fırsatı.
 - Sağlık farkındalık uygulamaları arasında niş bir ihtiyacı karşılayarak yüksek etki yaratma şansı.
