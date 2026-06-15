@@ -1,38 +1,10 @@
 # Post-transplantAR — Karaciğer Nakli Sonrası Eğitim Uygulaması
 
+**Geliştirici:** İslam Çelebi · **Öğrenci No:** 220541052
+
 Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarlanmış, **kart bazlı** bir mobil **Arttırılmış Gerçeklik** eğitim uygulaması. 
 
 > **Önemli:** Tüm içerik eğitim amaçlıdır. Tanı koymaz, tedavi önermez. Kişisel kararlar için mutlaka nakil ekibinize danışın.
-
----
-
-## APK indir (Android)
-
-**Doğrudan indirme linki:** [GitHub Releases](https://github.com/deusdotdev/Post-transplantAR/releases/latest) → `PostTransplantAR.apk` dosyasını indir.
-
-> APK repoya commit edilmez (`Builds/` gitignore'da). Hocanın belirttiği **“APK doğrudan indirilemiyor”** hatasının nedeni genelde release oluşturulmaması veya README'de çalışmayan bir link verilmesidir. APK **GitHub Release** eki olarak yüklenmelidir.
-
-### Telefona kurulum
-
-1. İndirilen `.apk` dosyasına dokun (Chrome bazen “zararlı olabilir” uyarısı verir — **Yine de indir / Yine de yükle**).
-2. **Ayarlar → Güvenlik → Bilinmeyen uygulamalar** (veya kurulum sırasında çıkan izin) ile tarayıcıya/Drive'a kurulum izni ver.
-3. AR destekli Android cihazda **Google Play Services for AR (ARCore)** yüklü olsun.
-4. Uygulama açılmazsa: Android 8+ (API 26+) ve ARCore destekli cihaz kullanın.
-
-### Release oluşturma (geliştirici)
-
-Unity'de APK üret → GitHub'da Release aç → APK'yı asset olarak ekle:
-
-```bash
-# 1) Unity menü: Post-transplantAR → Build → Android (APK)
-#    Çıktı: Builds/Android/PostTransplantAR.apk
-
-# 2) GitHub → Releases → Draft a new release
-#    Tag: v1.0.0  |  Title: v1.0.0 — Android APK
-#    Asset olarak PostTransplantAR.apk yükle → Publish release
-```
-
-Release notlarına kısaca: test edilen cihaz, Unity sürümü, bilinen sorunlar.
 
 ---
 
@@ -219,6 +191,36 @@ Detay: [docs/README.md](docs/README.md)
 - `Build Home Hub` çalıştırmadan sahne layout'u güncel olmayabilir; UI değişikliklerinden sonra menüyü yeniden çalıştır.
 - İlaç paneli layout'u runtime'da da düzeltilir; yine de **Build AR Scene** önerilir.
 - Ek AR kurulum detayı: [SETUP_ARFOUNDATION_ANDROID_TR.md](SETUP_ARFOUNDATION_ANDROID_TR.md)
+
+---
+
+## APK indir (Android)
+
+**Doğrudan indirme linki:** [GitHub Releases](https://github.com/deusdotdev/Post-transplantAR/releases/latest) → `PostTransplantAR.apk` dosyasını indir.
+
+> APK repoya commit edilmez (`Builds/` gitignore'da). Hocanın belirttiği **“APK doğrudan indirilemiyor”** hatasının nedeni genelde release oluşturulmaması veya README'de çalışmayan bir link verilmesidir. APK **GitHub Release** eki olarak yüklenmelidir.
+
+### Telefona kurulum
+
+1. İndirilen `.apk` dosyasına dokun (Chrome bazen “zararlı olabilir” uyarısı verir — **Yine de indir / Yine de yükle**).
+2. **Ayarlar → Güvenlik → Bilinmeyen uygulamalar** (veya kurulum sırasında çıkan izin) ile tarayıcıya/Drive'a kurulum izni ver.
+3. AR destekli Android cihazda **Google Play Services for AR (ARCore)** yüklü olsun.
+4. Uygulama açılmazsa: Android 8+ (API 26+) ve ARCore destekli cihaz kullanın.
+
+### Release oluşturma (geliştirici)
+
+Unity'de APK üret → GitHub'da Release aç → APK'yı asset olarak ekle:
+
+```bash
+# 1) Unity menü: Post-transplantAR → Build → Android (APK)
+#    Çıktı: Builds/Android/PostTransplantAR.apk
+
+# 2) GitHub → Releases → Draft a new release
+#    Tag: v1.0.0  |  Title: v1.0.0 — Android APK
+#    Asset olarak PostTransplantAR.apk yükle → Publish release
+```
+
+Release notlarına kısaca: test edilen cihaz, Unity sürümü, bilinen sorunlar.
 
 ---
 
