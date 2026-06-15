@@ -198,7 +198,6 @@ Detay: [docs/README.md](docs/README.md)
 
 **Doğrudan indirme linki:** [GitHub Releases](https://github.com/deusdotdev/Post-transplantAR/releases/latest) → `PostTransplantAR.apk` dosyasını indir.
 
-> APK repoya commit edilmez (`Builds/` gitignore'da). Hocanın belirttiği **“APK doğrudan indirilemiyor”** hatasının nedeni genelde release oluşturulmaması veya README'de çalışmayan bir link verilmesidir. APK **GitHub Release** eki olarak yüklenmelidir.
 
 ### Telefona kurulum
 
