@@ -37,7 +37,7 @@ Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarl
 
 ```bash
 git clone https://github.com/deusdotdev/Post-transplantAR.git
-cd GüncelKonularKaraciğer   # veya klonladığınız klasör adı
+cd Post-transplantAR   # veya klonladığınız klasör adı
 ```
 
 ### 2. Unity ile aç
