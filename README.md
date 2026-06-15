@@ -206,20 +206,7 @@ Detay: [docs/README.md](docs/README.md)
 3. AR destekli Android cihazda **Google Play Services for AR (ARCore)** yüklü olsun.
 4. Uygulama açılmazsa: Android 8+ (API 26+) ve ARCore destekli cihaz kullanın.
 
-### Release oluşturma (geliştirici)
 
-Unity'de APK üret → GitHub'da Release aç → APK'yı asset olarak ekle:
-
-```bash
-# 1) Unity menü: Post-transplantAR → Build → Android (APK)
-#    Çıktı: Builds/Android/PostTransplantAR.apk
-
-# 2) GitHub → Releases → Draft a new release
-#    Tag: v1.0.0  |  Title: v1.0.0 — Android APK
-#    Asset olarak PostTransplantAR.apk yükle → Publish release
-```
-
-Release notlarına kısaca: test edilen cihaz, Unity sürümü, bilinen sorunlar.
 
 ---
 
