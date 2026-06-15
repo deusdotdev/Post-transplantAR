@@ -2,7 +2,7 @@
 
 Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarlanmış, **kart bazlı** bir mobil **Arttırılmış Gerçeklik** eğitim uygulaması. 
 
-> **Önemli:** Tüm içerik eğitim amaçlıdır. Tanı koymaz, tedavi önermez. Kişisel kararlar için mutlaka transplant ekibinize danışın.
+> **Önemli:** Tüm içerik eğitim amaçlıdır. Tanı koymaz, tedavi önermez. Kişisel kararlar için mutlaka nakil ekibinize danışın.
 
 ---
 
