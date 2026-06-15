@@ -8,7 +8,7 @@ Karaciğer nakli sonrası hastaların kendi süreçlerini anlaması için tasarl
 
 ## Ne yapar?
 
-| Kart | Mod | Özet |
+| Senaryo | Mod | Özet |
 |------|-----|------|
 | **Nakil sonrası yolculuğum** | AR'sız | 0. gün → 1. hafta → 1. ay → 3. ay → 6–12. ay zaman çizelgesi; her adımda karaciğer rengi/ölçeği + AST/ALT/bilirubin + anlatım |
 | **İlaçlarım nereye etki ediyor?** | AR | Modeli yerleştir, ilaç seç; bölgeden ok + etiket çıkar. **Düzenli / Atlanırsa** geçişi ile greftin nasıl korunduğu veya risk arttığı gösterilir |
